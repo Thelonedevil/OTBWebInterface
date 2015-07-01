@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title><%= content_for?(:title) ? yield(:title) : "foundation-rails" %></title>
+
+    <%= stylesheet_link_tag "application" %>
+    <%= javascript_include_tag "vendor/modernizr" %>
+    <%= javascript_include_tag "application", 'data-turbolinks-track' => true %>
+    <%= csrf_meta_tags %>
+</head>
+
+<body>
+<div class="panel" style="padding-left: 0;padding-right: 0;padding-bottom: 0;">
+    <h1 class="text-center">OTBProject Web Interface</h1>
+
+    <div class="sticky">
+        <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large; is_hover: false; mobile_show_parent_link: false;">
+            <ul class="title-area">
+                <li class="name">
+                    <h1><a href="/">Home</a></h1>
+                </li>
+                <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+            </ul>
+            <% if content_for?(:channel) %>
+                <section class="top-bar-section">
+                    <ul class="right">
+                        <li><span id="channelLabel"><%=yield(:channel) %></span></li>
+                        <li>
+                            <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/alias');">Aliases</a>
+                        </li>
+                        <li>
+                            <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/quote');">Quotes</a>
+                        </li>
+                        <li class="has-dropdown ">
+                            <a href="#">Commands</a>
+                            <ul class="dropdown">
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/all');">
+                                        All
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/int');">
+                                        Internal
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/own');">
+                                        Broadcaster
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/own/all');">
+                                        Broadcaster and below
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/smd');">
+                                        Super-Moderator
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/smd/all');">
+                                        Super-Moderator and below
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/mod');">
+                                        Moderator
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/mod/all');">
+                                        Moderator and below
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/reg');">
+                                        Regular
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/reg/all');">
+                                        Regular and below
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/sub');">
+                                        Subscribers
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/sub/all');">
+                                        Subscriber and below
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/command/usr');">
+                                        Users
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </section>
+            <% end %>
+
+
+        </nav>
+    </div>
+</div>
+<div id="loadingModal" class="reveal-modal" data-reveal aria-labelledby="firstModalTitle" aria-hidden="true" role="dialog">
+    <div class="loader">LOADING...</div>
+</div>
+<div class="row">
+    <div class="small-10 small-centered columns">
+        <%= yield %>
+    </div>
+</div>
+
+</body>
+</html>

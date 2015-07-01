@@ -1,0 +1,29 @@
+<% content_for :title do %><%= params[:channel] %>
+<% end %>
+<% content_for :channel do %><%= params[:channel] %>
+<% end %>
+<div class="panel callout radius">
+    <h1>
+        Aliases for <%= params[:channel] %>
+    </h1>
+</div>
+<table class="responsive">
+    <thead>
+    <tr>
+        <th width="150">Name</th>
+        <th width="100%">Command</th>
+        <th width="100%">Response/Script</th>
+        <th width="100%">User Level</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @alias.each do |a| %>
+            <tr>
+            <td><%= a.name %></td>
+            <td><%= a.command %></td>
+            <td><%= @commands[a].script.nil? ? @commands[a].response : "[Script] #{@commands[a].script}" %></td>
+            <td><%= @commands[a].execUserLevel.capitalize! %></td>
+        </tr>
+    <% end %>
+    </tbody>
+</table>

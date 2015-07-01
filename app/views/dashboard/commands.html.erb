@@ -1,0 +1,65 @@
+<% content_for :title do %><%= params[:channel] %>
+<% end %>
+<% content_for :channel do %><%= params[:channel] %>
+<% end %>
+<div class="panel callout radius">
+    <h1>
+        <% all = params[:all] %>
+        <% case params[:user_level] %>
+        <% when 'all' %>
+            <%= "All commands for #{params[:channel]}" %>
+        <% when 'usr' %>
+            <%= "Commands for a user of #{params[:channel]}" %>
+        <% when 'sub' %>
+            <% if !all.nil? && all == 'all' %>
+                <%= "All commands for a subscriber of #{params[:channel]}" %>
+            <% else %>
+                <%= "Subscriber commands for #{params[:channel]}" %>
+            <% end %>
+        <% when 'reg' %>
+            <% if !all.nil? && all == 'all' %>
+                <%= "All commands for a regular of #{params[:channel]}" %>
+            <% else %>
+                <%= "Regular commands for #{params[:channel]}" %>
+            <% end %>
+        <% when 'mod' %>
+            <% if !all.nil? && all == 'all' %>
+                <%= "All commands for a moderator of #{params[:channel]}" %>
+            <% else %>
+                <%= "Moderator commands for #{params[:channel]}" %>
+            <% end %>
+        <% when 'smd' %>
+            <% if !all.nil? && all == 'all' %>
+                <%= "All commands for a super-moderator of #{params[:channel]}" %>
+            <% else %>
+                <%= "Super-Moderator commands for #{params[:channel]}" %>
+            <% end %>
+        <% when 'own' %>
+            <% if !all.nil? && all == 'all' %>
+                <%= "All commands for the broadcaster of #{params[:channel]}" %>
+            <% else %>
+                <%= "Broadcaster only commands for #{params[:channel]}" %>
+            <% end %>
+        <% when 'int' %>
+            <%= "Internal commands for #{params[:channel]}" %>
+        <% else %>
+        <% end %></h1>
+</div>
+<table class="responsive">
+    <thead>
+    <tr>
+        <th width="150">Name</th>
+        <th width="100%">Response/Script</th>
+        <th width="150">User Level</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @command.each do |command| %>
+        <tr>
+            <td><%= command.name %></td>
+            <td><%= command.script.nil? ? command.response : "[Script] #{command.script}" %></td>
+            <td><%= command.execUserLevel.capitalize! %></td>
+        </tr>
+    <% end %>
+    </tbody>
+</table>

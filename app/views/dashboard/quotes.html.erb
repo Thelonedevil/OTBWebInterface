@@ -1,0 +1,25 @@
+<% content_for :title do %><%= params[:channel] %>
+<% end %>
+<% content_for :channel do %><%= params[:channel] %>
+<% end %>
+<div class="panel callout radius">
+    <h1>
+        Quotes for <%= params[:channel] %>
+    </h1>
+</div>
+<table class="responsive">
+    <thead>
+    <tr>
+        <th width="100">ID</th>
+        <th width="100%">Quote</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @quote.each do |quote| %>
+        <tr>
+            <td><%= quote.id %></td>
+            <td><%= quote.text %></td>
+        </tr>
+    <% end %>
+    </tbody>
+</table>
