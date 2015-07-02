@@ -1,3 +1,4 @@
 #!/bin/bash
-bundle exec rake assets:precompile
-bundle exec warble war
+jruby -S bundle install
+jruby -S bundle exec rake assets:precompile
+jruby -S bundle exec warble war
