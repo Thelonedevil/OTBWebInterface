@@ -78,10 +78,10 @@ class DashboardController < ApplicationController
           end
           command.response = params[:response]
           command.minArgs = params[:minArgs]
-          command.responseModifyingUL = params[:rMUL]
-          command.nameModifyingUL = params[:nMUL]
-          command.userLevelModifyingUL = params[:ulMUL]
-          command.execUserLevel = params[:eUL]
+          command.responseModifyingUL = params[:rMUL].to_s.upcase
+          command.nameModifyingUL = params[:nMUL].to_s.upcase
+          command.userLevelModifyingUL = params[:ulMUL].to_s.upcase
+          command.execUserLevel = params[:eUL].to_s.upcase
           command.save
         when 'new'
           unless Command.exists? params[:command]
