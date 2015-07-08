@@ -7,6 +7,9 @@
         Aliases for <%= params[:channel] %>
     </h1>
 </div>
+<% if @writable %>
+    <a href="#" class="button expand">New</a>
+<% end %>
 <table class="responsive">
     <thead>
     <tr>
@@ -14,16 +17,53 @@
         <th width="100%">Command</th>
         <th width="100%">Response/Script</th>
         <th width="100%">User Level</th>
+        <% if @writable %>
+            <th></th>
+        <% end %>
     </tr>
     </thead>
     <tbody>
+    <% index = 0 %>
     <% @alias.each do |a| %>
-            <tr>
-            <td><%= a.name %></td>
-            <td><%= a.command %></td>
-            <td><%= @commands[a].script.nil? ? @commands[a].response : "[Script] #{@commands[a].script}" %></td>
-            <td><%= @commands[a].execUserLevel.capitalize! %></td>
+        <% enabled = a.enabled == 'true' %>
+        <%= enabled ? raw('<tr>') : raw('<tr title="This Alias is DISABLED" style="background-color: #F9D2D4;">') %>
+        <td><%= a.name %></td>
+        <td><%= a.command %></td>
+        <td>
+            <% unless @commands[a].nil? %><%= @commands[a].script.nil? ? @commands[a].response : raw('<b>[Script]</b>')+" #{@commands[a].script}" %>
+            <% end %></td>
+        <td>
+            <% unless @commands[a].nil? %><%= @commands[a].execUserLevel.capitalize! %>
+            <% end %></td>
+        <% if @writable %>
+            <td>
+                <div>
+                    <a href="#" style="margin: auto" data-reveal-id="editModal" class="button small split">Edit <%= raw("<span data-dropdown='drop-#{index}'>") %></span></a>
+                </div><%= raw("<ul id='drop-#{index}' class='f-dropdown' data-dropdown-content>") %>
+                <li><a href="#"><%= enabled ? 'Disable' : 'Enable' %></a></li>
+                <li><a data-reveal-id="deleteModal" href="#">Delete</a></li>
+                </ul>
+            </td>
+        <% end %>
+
         </tr>
+        <% index+=1 %>
     <% end %>
     </tbody>
 </table>
+<div id="editModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <h2 id="modalTitle">Awesome. I have it.</h2>
+
+    <p class="lead">Your couch. It is mine.</p>
+
+    <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+<div id="deleteModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <h2 id="modalTitle">Awesome. I have it.</h2>
+
+    <p class="lead">Your couch. It is mine.</p>
+
+    <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>

@@ -1,5 +1,21 @@
+require 'json'
+require 'ipaddr'
 class DashboardController < ApplicationController
+  def allowed?
+    file = File.read("#{Dir.home}/.otbproject/config/web-config.json")
+    data = JSON.parse file
+    ip_addresses_with_prefix = data['whitelistedIPAddressesWithSubnettingPrefix'].to_a
+    ip_addresses_with_prefix.each do |i|
+      ip = IPAddr.new i
+      if ip.include? request.remote_ip
+        return true
+      end
+    end
+    false
+  end
+
   def commands
+    @writable = allowed?
     user_level = params[:user_level]
     all = params[:all]
     @channel = params[:channel]
@@ -45,14 +61,17 @@ class DashboardController < ApplicationController
   end
 
   def aliases
+    @writable = allowed?
     @channel = params[:channel]
     get_aliases
   end
 
   def quotes
+    @writable = allowed?
     @channel = params[:channel]
     get_quotes
   end
+
 
   def get_quotes
     ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "~/.otbproject/data/channels/#{@channel}/quotes.db"
@@ -62,11 +81,13 @@ class DashboardController < ApplicationController
 
   def get_aliases
     ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "~/.otbproject/data/channels/#{@channel}/main.db"
-    @alias = Alias.where enabled: 'true'
+    @alias = Alias.all
     @alias.to_a.sort!
     @commands = Hash.new
     @alias.each do |a|
-      @commands[a] = get_command a.command
+      unless a.command.nil?
+        @commands[a] = get_command a.command
+      end
     end
   end
 

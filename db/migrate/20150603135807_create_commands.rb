@@ -5,6 +5,7 @@ class CreateCommands < ActiveRecord::Migration
       t.string :execUserLevel
       t.string :response
       t.string :script
+      t.string :enabled
       t.timestamps null: false
     end
   end

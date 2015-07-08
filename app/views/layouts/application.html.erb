@@ -14,7 +14,7 @@
 
 <body>
 <div class="panel" style="padding-left: 0;padding-right: 0;padding-bottom: 0;">
-    <h1 class="text-center">OTBProject Web Interface</h1>
+    <h1 class="text-center">OTB Web Interface</h1>
 
     <div class="sticky">
         <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large; is_hover: false; mobile_show_parent_link: false;">
@@ -27,7 +27,7 @@
             <% if content_for?(:channel) %>
                 <section class="top-bar-section">
                     <ul class="right">
-                        <li><span id="channelLabel"><%=yield(:channel) %></span></li>
+                        <li><span id="channelLabel"><%= yield(:channel) %></span></li>
                         <li>
                             <a href="javascript:create('/dashboard/channel/<%= yield(:channel) %>/get/alias');">Aliases</a>
                         </li>
@@ -116,11 +116,16 @@
 <div id="loadingModal" class="reveal-modal" data-reveal aria-labelledby="firstModalTitle" aria-hidden="true" role="dialog">
     <div class="loader">LOADING...</div>
 </div>
-<div class="row">
-    <div class="small-10 small-centered columns">
+<div style="min-height: 80%" class="row fullWidth">
+    <div  class="small-12 medium-10 small-centered columns">
         <%= yield %>
     </div>
 </div>
+<footer>
+    <div style="background-color: #333333; padding: auto; height: 60px;" class="text-center">
+        <a style="margin: auto" href="http://otbproject.github.io" target="_blank">OTBProject</a>
+    </div>
+</footer>
 
 </body>
 </html>
