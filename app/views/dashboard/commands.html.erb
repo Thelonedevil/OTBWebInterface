@@ -46,7 +46,77 @@
         <% end %></h1>
 </div>
 <% if @writable %>
-    <a href="#" class="button expand">New</a>
+    <div class="small-10 columns">
+        <a href="#" data-reveal-id='newModal' class="button expand">New</a>
+    </div>
+    <div id='newModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'>
+        <form id="ajax-new" method="post" action="">
+            <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+            <input name="action_type" id="action_type" type="hidden" value="new">
+            <div class="field">
+                <label for="command">Command:</label>
+                <input type='text' id='command' name='command' required>
+            </div>
+            <div class="field">
+                <label for="response">Response:</label>
+                <input type='text' id='response' name='response'>
+            </div>
+            <div class="field">
+                <label for="script">Script: (Optional; overrides 'Response')</label>
+                <input type='text' id='script' name='script'>
+            </div>
+            <div class="field">
+                <label for="minArgs">Minimum Arguments:</label>
+                <input required type='text' id='minArgs' value='0' name='minArgs'>
+            </div>
+            <div class="field">
+                <label>Executing UserLevel:</label>
+                <select name="eUL" title="eUL">
+                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                    <% uls.each do |ul| %>
+                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                    <% end %>
+                </select>
+            </div>
+            <div class="field">
+                <label>Name Modifying UserLevel:</label>
+                <select name="nMUL" title="nMUL">
+                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                    <% uls.each do |ul| %>
+                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                    <% end %>
+                </select>
+            </div>
+            <div class="field">
+                <label>Response Modifying UserLevel:</label>
+                <select name="rMUL" title="rMUL">
+                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                    <% uls.each do |ul| %>
+                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                    <% end %>
+                </select>
+            </div>
+            <div class="field">
+                <label>UserLevel Modifying UserLevel:</label>
+                <select name="ulMUL" title="ulMUL">
+                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                    <% uls.each do |ul| %>
+                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                    <% end %>
+                </select>
+            </div>
+
+            <div class="field">
+            </div>
+            <div class="field">
+                <button type="submit">Save</button>
+            </div>
+        </form>
+        <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+    <div class="small-2 columns">
+        <a href="javascript:load(window.location.href);" class="button expand">Reload</a>
+    </div>
 <% end %>
 <table class="responsive">
     <thead>
@@ -60,38 +130,137 @@
     </tr>
     </thead>
     <tbody>
-    <%index=0 %>
+    <% index=0 %>
     <% @command.each do |command| %>
-        <% enabled = command.enabled == 'true'%>
+        <% enabled = command.enabled == 'true' %>
         <%= enabled ? raw('<tr>') : raw('<tr title="This Command is DISABLED" style="background-color: #F9D2D4;">') %>
         <td><%= command.name %></td>
         <td><%= command.script.nil? ? command.response : raw('<b>[Script]</b>')+" #{command.script}" %></td>
         <td><%= command.execUserLevel.capitalize! %></td>
         <% if @writable %>
-            <td><div><a href="#" style="margin: auto" data-reveal-id="editModal" class="button small split">Edit <%= raw("<span data-dropdown='drop-#{index}'>")%></span></a></div><%=raw("<ul id='drop-#{index}' class='f-dropdown' data-dropdown-content>")%>
-                <li><a href="#"><%= enabled ? 'Disable' : 'Enable' %></a></li>
-                <li><a data-reveal-id="deleteModal" href="#">Delete</a></li>
+            <td>
+                <div>
+                    <%= raw("<a href='#' style='margin: auto' data-reveal-id='editModal-#{index}' class='button small split'>") %>
+                    Edit <%= raw("<span data-dropdown='drop-#{index}'>") %></span></a>
+                </div><%= raw("<ul id='drop-#{index}' class='f-dropdown' data-dropdown-content>") %>
+                <li>
+                    <%= raw("<form id='ajax-toggle-#{index}' method='post' action=''>") %>
+                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                    <input name="action_type" id="action_type" type="hidden" value="toggle">
+                    <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name}'>") %>
+                    <%= raw("<a id='ajax-toggle-submit-#{index}' href=''>") %><%= enabled ? 'Disable' : 'Enable' %></a>
+                    </form>
+                    <script>
+                        var anchor = document.getElementById("<%="ajax-toggle-submit-#{index}" %>");
+                        anchor.addEventListener('click', function () {
+                            document.getElementById('<%="ajax-toggle-#{index}"%>').submit();
+
+                        }, false);
+                    </script>
+                </li>
+                <li><%= raw("<a data-reveal-id='deleteModal-#{index}' href='#'>Delete</a>") %></li>
                 </ul>
+                <%= raw("<div id='editModal-#{index}' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
+                <form id="ajax-edit" method="post" action="">
+                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                    <input name="action_type" id="action_type" type="hidden" value="edit">
+                    <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name}'>") %>
+                    <div class="field">
+                        <label for="command">Command:</label>
+                        <%= raw("<input type='text' id='command' name='command' required value='#{command.name}'>") %>
+                    </div>
+
+                    <div class="field">
+                        <label for="response">Response:</label>
+                        <%= raw("<input type='text' id='response' name='response'") %><%= command.script.nil? ? raw(" value='#{command.response}' required>") : raw('readonly>') %>
+                    </div>
+
+                    <div class="field">
+                        <label for="script">Script:</label>
+                        <%= raw("<input readonly type='text' id='script' name='script' value='#{command.script}'>") %>
+                    </div>
+
+                    <div class="field">
+                        <label for="minArgs">Minimum Arguments:</label>
+                        <%= raw("<input required type='text' id='minArgs' name='minArgs' value='#{command.minArgs}'>") %>
+                    </div>
+                    <div class="field">
+                        <label>Executing UserLevel:</label>
+                        <select name="eUL" title="eUL">
+                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                            <% uls.each do |ul| %>
+                                <% if command.execUserLevel.upcase.eql? ul %>
+                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
+                                <% else %>
+                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                                <% end %>
+                            <% end %>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Name Modifying UserLevel:</label>
+                        <select name="nMUL" title="nMUL">
+                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                            <% uls.each do |ul| %>
+                                <% if command.nameModifyingUL.upcase.eql? ul %>
+                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
+                                <% else %>
+                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                                <% end %>
+                            <% end %>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Response Modifying UserLevel:</label>
+                        <select name="rMUL" title="rMUL">
+                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                            <% uls.each do |ul| %>
+                                <% if command.responseModifyingUL.upcase.eql? ul %>
+                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
+                                <% else %>
+                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                                <% end %>
+                            <% end %>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>UserLevel Modifying UserLevel:</label>
+                        <select name="ulMUL" title="ulMUL">
+                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
+                            <% uls.each do |ul| %>
+                                <% if command.userLevelModifyingUL.upcase.eql? ul %>
+                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
+                                <% else %>
+                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
+                                <% end %>
+                            <% end %>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                    </div>
+                    <div class="field">
+                        <button type="submit">Save</button>
+                    </div>
+                </form>
+                <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+                </div>
+                <%= raw("<div id='deleteModal-#{index}' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
+                <%= raw("<form id='ajax-delete-#{index}' method='post' action=''>") %>
+                <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                <input name="action_type" id="action_type" type="hidden" value="delete">
+                <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name}'>") %>
+                <input required type="checkbox" name="confirm" value="confirm"> Confirm that you want to delete the
+                command: "<%= command.name %>" </br>
+                <button class="alert" type="submit">Delete</button>
+                </form>
+                <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+                </div>
             </td>
         <% end %>
         </tr>
-        <%index+=1%>
+        <% index+=1 %>
     <% end %>
     </tbody>
 </table>
-<div id="editModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
-    <h2 id="modalTitle">Awesome. I have it.</h2>
 
-    <p class="lead">Your couch. It is mine.</p>
-
-    <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-</div>
-<div id="deleteModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
-    <h2 id="modalTitle">Awesome. I have it.</h2>
-
-    <p class="lead">Your couch. It is mine.</p>
-
-    <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-</div>

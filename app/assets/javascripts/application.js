@@ -17,9 +17,11 @@
 //= require_tree .
 //= require responsive-tables
 
-$(function(){ $(document).foundation(); });
+$(function () {
+    $(document).foundation();
+});
 
-function create(url) {
+function load(url) {
 
     $('#loadingModal').foundation('reveal', 'open');
 
@@ -40,10 +42,11 @@ function createSuccessHandler(url) {
 
 function createErrorHandler(data) {
 
-   // alert("It failed, ffs!")
+    // alert("It failed, ffs!")
 
 }
 
 function hideLoadingImage() {
     $('#loadingModal').foundation('reveal', 'close');
 }
+

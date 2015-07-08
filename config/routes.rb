@@ -3,6 +3,10 @@ Rails.application.routes.draw do
   get 'dashboard/channel/:channel/get/command/:user_level' => 'dashboard#commands'
   get 'dashboard/channel/:channel/get/command/:user_level/:all' => 'dashboard#commands'
 
+  post 'dashboard/channel/:channel/get/command/:user_level' => 'dashboard#commands_edit'
+  post 'dashboard/channel/:channel/get/command/:user_level/:all' => 'dashboard#commands_edit'
+
+
   # Alias getting routes
   get 'dashboard/channel/:channel/get/alias/' => 'dashboard#aliases'
 

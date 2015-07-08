@@ -6,6 +6,10 @@ class CreateCommands < ActiveRecord::Migration
       t.string :response
       t.string :script
       t.string :enabled
+      t.integer :minArgs
+      t.string :responseModifyingUL
+      t.string :userLevelModifyingUL
+      t.string :nameModifyingUL
       t.timestamps null: false
     end
   end
