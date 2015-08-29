@@ -8,4 +8,4 @@ deploy: build
 	mvn deploy:deploy-file -Dfile=OTBWebInterface.war -DpomFile=pom.xml -DrepositoryId="$(repo)" -Durl=http://ts.tldcode.uk:8081/nexus/content/repositories/"$(repo)"/ --settings settings.xml
 
 clean:
-	rm OTBWebInterface.war
+	rm -f OTBWebInterface.war

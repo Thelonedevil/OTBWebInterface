@@ -49,17 +49,18 @@
     <div class="small-10 columns">
         <a href="#" data-reveal-id='newModal' class="button expand">New</a>
     </div>
-    <div id='newModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'>
+    <div id='newModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
         <form id="ajax-new" method="post" action="">
             <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
             <input name="action_type" id="action_type" type="hidden" value="new">
+
             <div class="field">
                 <label for="command">Command:</label>
                 <input type='text' id='command' name='command' required>
             </div>
             <div class="field">
                 <label for="response">Response:</label>
-                <input type='text' id='response' name='response'>
+                <input type='text' placeholder="example response" id='response' name='response'>
             </div>
             <div class="field">
                 <label for="script">Script (optional; overrides 'Response'):</label>
@@ -67,7 +68,14 @@
             </div>
             <div class="field">
                 <label for="minArgs">Minimum Arguments:</label>
-                <input required type='text' id='minArgs' value='0' name='minArgs'>
+                <input required type='number' id='minArgs' min="0" value='0' name='minArgs'>
+            </div>
+            <div class="field">
+                <label>Debug</label>
+                <select name="debug" title="debug">
+                    <option>False</option>
+                    <option>True</option>
+                </select>
             </div>
             <div class="field">
                 <label>Executing UserLevel:</label>
@@ -107,8 +115,6 @@
             </div>
 
             <div class="field">
-            </div>
-            <div class="field">
                 <button type="submit">Save</button>
             </div>
         </form>
@@ -133,7 +139,7 @@
     <% index=0 %>
     <% @command.each do |command| %>
         <% enabled = command.enabled == 'true' %>
-        <%= enabled ? raw('<tr>') : raw('<tr title="This Command is DISABLED" style="background-color: #F9D2D4;">') %>
+        <%= enabled ? raw('<tr>') : raw('<tr title="This Command is DISABLED" style="background-color: #F9D2D4; cursor: help;">') %>
         <td><%= command.name %></td>
         <td><%= command.script.nil? ? command.response : raw('<b>[Script]</b>')+" #{command.script}" %></td>
         <td><%= command.execUserLevel.capitalize! %></td>
@@ -160,7 +166,7 @@
                 </li>
                 <li><%= raw("<a data-reveal-id='deleteModal-#{index}' href='#'>Delete</a>") %></li>
                 </ul>
-                <%= raw("<div id='editModal-#{index}' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
+                <%= raw("<div id='editModal-#{index}' class='reveal-modal' data-options='close_on_background_click: false;' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
                 <form id="ajax-edit" method="post" action="">
                     <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
                     <input name="action_type" id="action_type" type="hidden" value="edit">
@@ -245,7 +251,7 @@
                 </form>
                 <a class="close-reveal-modal" aria-label="Close">&#215;</a>
                 </div>
-                <%= raw("<div id='deleteModal-#{index}' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
+                <%= raw("<div id='deleteModal-#{index}' class='reveal-modal' data-options='close_on_background_click: false;' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
                 <%= raw("<form id='ajax-delete-#{index}' method='post' action=''>") %>
                 <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
                 <input name="action_type" id="action_type" type="hidden" value="delete">

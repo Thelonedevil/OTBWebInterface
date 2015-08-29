@@ -4,7 +4,7 @@ class DashboardController < ApplicationController
   def allowed?
     file = File.read("#{Dir.home}/.otbproject/config/web-config.json")
     data = JSON.parse file
-    ip_addresses_with_prefix = data['whitelistedIPAddressesWithSubnettingPrefix'].to_a
+    ip_addresses_with_prefix = data['writableWhitelist'].to_a
     ip_addresses_with_prefix.each do |i|
       ip = IPAddr.new i
       if ip.include? request.remote_ip
@@ -63,21 +63,21 @@ class DashboardController < ApplicationController
   def commands_edit
     ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "~/.otbproject/data/channels/#{params[:channel]}/main.db"
     if params.has_key? :old_command
-         command = Command.find_by_name params[:old_command]
+         command = Command.find_by_name params[:old_command].to_s
       else
         command = Command.new
       end
       case params[:action_type]
         when 'delete'
-          if (Command.exists? command.name)
+          if Command.exists? command.name
             command.destroy
           end
         when 'edit'
           unless Command.exists? params[:command]
-            command.name = params[:command]
+            command.name = params[:command].to_s
           end
-          command.response = params[:response]
-          command.minArgs = params[:minArgs]
+          command.response = params[:response].to_s
+          command.minArgs = params[:minArgs].to_s
           command.responseModifyingUL = params[:rMUL].to_s.upcase
           command.nameModifyingUL = params[:nMUL].to_s.upcase
           command.userLevelModifyingUL = params[:ulMUL].to_s.upcase
@@ -85,19 +85,22 @@ class DashboardController < ApplicationController
           command.save
         when 'new'
           unless Command.exists? params[:command]
-            command.name = params[:command]
-            command.response = params[:response]
-            command.minArgs = params[:minArgs]
+            command.name = params[:command].to_s
+            command.response = params[:response].to_s.empty? ? 'example response' : params[:response].to_s
+            command.script = params[:script].to_s.empty? ? nil : params[:script].to_s
+            command.minArgs = params[:minArgs].to_s
+            command.count = 0
+            command.debug = params[:debug].to_s.empty? ? 'false' : params[:rMUL].to_s.downcase
             command.responseModifyingUL = params[:rMUL].to_s.empty? ? 'DEFAULT' : params[:rMUL].to_s.upcase
             command.nameModifyingUL = params[:nMUL].to_s.empty? ? 'DEFAULT' : params[:nMUL].to_s.upcase
             command.userLevelModifyingUL = params[:ulMUL].to_s.empty? ? 'DEFAULT' : params[:ulMUL].to_s.upcase
             command.execUserLevel = params[:eUL].to_s.empty? ? 'DEFAULT' : params[:eUL].to_s.upcase
-            command.enabled='true';
+            command.enabled='true'
             command.save
           end
 
         when 'toggle'
-          if (Command.exists? command.name)
+          if Command.exists? command.name
             command.enabled = command.enabled=='true' ? 'false' : 'true'
             command.save
           end
