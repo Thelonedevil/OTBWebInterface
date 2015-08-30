@@ -69,11 +69,11 @@ class DashboardController < ApplicationController
       end
       case params[:action_type]
         when 'delete'
-          if Command.exists? command.name
+          if Command.exists? command.name.to_s
             command.destroy
           end
         when 'edit'
-          unless Command.exists? params[:command]
+          unless Command.exists? params[:command].to_s
             command.name = params[:command].to_s
           end
           command.response = params[:response].to_s

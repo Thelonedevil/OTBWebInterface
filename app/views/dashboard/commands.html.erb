@@ -4,29 +4,29 @@
 <% end %>
 <div class="panel callout radius">
     <h1 class="text-center">
-        <% all = params[:all] %>
-        <% case params[:user_level] %>
+        <% all = params[:all].to_s %>
+        <% case params[:user_level].to_s %>
         <% when 'all' %>
-            <%= "All commands for #{params[:channel]}" %>
+            <%= "All commands for #{params[:channel].to_s}" %>
         <% when 'usr' %>
-            <%= "Commands for a user of #{params[:channel]}" %>
+            <%= "Commands for a user of #{params[:channel].to_s}" %>
         <% when 'sub' %>
             <% if !all.nil? && all == 'all' %>
-                <%= "All commands for a subscriber of #{params[:channel]}" %>
+                <%= "All commands for a subscriber of #{params[:channel].to_s}" %>
             <% else %>
-                <%= "Subscriber commands for #{params[:channel]}" %>
+                <%= "Subscriber commands for #{params[:channel].to_s}" %>
             <% end %>
         <% when 'reg' %>
             <% if !all.nil? && all == 'all' %>
-                <%= "All commands for a regular of #{params[:channel]}" %>
+                <%= "All commands for a regular of #{params[:channel].to_s}" %>
             <% else %>
-                <%= "Regular commands for #{params[:channel]}" %>
+                <%= "Regular commands for #{params[:channel].to_s}" %>
             <% end %>
         <% when 'mod' %>
             <% if !all.nil? && all == 'all' %>
-                <%= "All commands for a moderator of #{params[:channel]}" %>
+                <%= "All commands for a moderator of #{params[:channel].to_s}" %>
             <% else %>
-                <%= "Moderator commands for #{params[:channel]}" %>
+                <%= "Moderator commands for #{params[:channel].to_s}" %>
             <% end %>
         <% when 'smd' %>
             <% if !all.nil? && all == 'all' %>
@@ -170,25 +170,25 @@
                 <form id="ajax-edit" method="post" action="">
                     <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
                     <input name="action_type" id="action_type" type="hidden" value="edit">
-                    <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name}'>") %>
+                    <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name.to_s}'>") %>
                     <div class="field">
                         <label for="command">Command:</label>
-                        <%= raw("<input type='text' id='command' name='command' required value='#{command.name}'>") %>
+                        <%= raw("<input type='text' id='command' name='command' required value='#{command.name.to_s}'>") %>
                     </div>
 
                     <div class="field">
                         <label for="response">Response:</label>
-                        <%= raw("<input type='text' id='response' name='response'") %><%= command.script.nil? ? raw(" value='#{command.response}' required>") : raw('readonly>') %>
+                        <%= raw("<input type='text' id='response' name='response'") %><%= command.script.nil? ? raw(" value='#{command.response.to_s}' required>") : raw('readonly>') %>
                     </div>
 
                     <div class="field">
                         <label for="script">Script:</label>
-                        <%= raw("<input readonly type='text' id='script' name='script' value='#{command.script}'>") %>
+                        <%= raw("<input readonly type='text' id='script' name='script' value='#{command.script.to_s}'>") %>
                     </div>
 
                     <div class="field">
                         <label for="minArgs">Minimum Arguments:</label>
-                        <%= raw("<input required type='text' id='minArgs' name='minArgs' value='#{command.minArgs}'>") %>
+                        <%= raw("<input required type='text' id='minArgs' name='minArgs' value='#{command.minArgs.to_s}'>") %>
                     </div>
                     <div class="field">
                         <label>Executing UserLevel:</label>
@@ -255,9 +255,9 @@
                 <%= raw("<form id='ajax-delete-#{index}' method='post' action=''>") %>
                 <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
                 <input name="action_type" id="action_type" type="hidden" value="delete">
-                <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name}'>") %>
+                <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name.to_s}'>") %>
                 <input required type="checkbox" name="confirm" value="confirm"> Confirm that you want to delete the
-                command: "<%= command.name %>" </br>
+                command: <%= command.name.to_s %> </br>
                 <button class="alert" type="submit">Delete</button>
                 </form>
                 <a class="close-reveal-modal" aria-label="Close">&#215;</a>
