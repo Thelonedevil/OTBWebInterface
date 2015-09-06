@@ -10,10 +10,11 @@ class DashboardController < ApplicationController
     ip_addresses_with_prefix.each do |i|
       ip = IPAddr.new i
       if ip.include? request.remote_ip
-        return true
+        render :json => '1'.to_json
+        return
       end
     end
-    false
+    render :json => '0'.to_json
   end
 
   def commands_edit
@@ -23,10 +24,12 @@ class DashboardController < ApplicationController
     else
       command = Command.new
     end
+    changed=false
     case params[:action_type]
       when 'delete'
         if Command.exists? command.name.to_s
           command.destroy
+          changed=true
         end
       when 'edit'
         unless Command.exists? params[:command].to_s
@@ -39,6 +42,7 @@ class DashboardController < ApplicationController
         command.userLevelModifyingUL = params[:ulMUL].to_s.upcase
         command.execUserLevel = params[:eUL].to_s.upcase
         command.save
+        changed=true
       when 'new'
         unless Command.exists? params[:command]
           command.name = params[:command].to_s
@@ -53,17 +57,19 @@ class DashboardController < ApplicationController
           command.execUserLevel = params[:eUL].to_s.empty? ? 'DEFAULT' : params[:eUL].to_s.upcase
           command.enabled='true'
           command.save
+          changed=true
         end
 
       when 'toggle'
         if Command.exists? command.name
           command.enabled = command.enabled=='true' ? 'false' : 'true'
           command.save
+          changed=true
         end
       else
+        changed=false
     end
-    commands
-    render 'dashboard/commands'
+    render :json => changed ? 1.to_json : 0.to_json
   end
 
 

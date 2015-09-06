@@ -17,6 +17,13 @@ Rails.application.routes.draw do
   get 'dashboard/:channel/quotes/get_channel_name' => 'dashboard#get_channel_name'
   get 'dashboard/:channel/quotes/get_quotes' => 'dashboard#get_quotes'
 
+  get 'dashboard/is_whitelisted' => 'dashboard#allowed?'
+
+  post 'dashboard/:channel/commands/add_command' => 'dashboard#commands_edit'
+  post 'dashboard/:channel/commands/edit_command' => 'dashboard#commands_edit'
+  post 'dashboard/:channel/commands/delete_command' => 'dashboard#commands_edit'
+  post 'dashboard/:channel/commands/toggle_command' => 'dashboard#commands_edit'
+
   get 'welcome/index'
 
   root 'welcome#index'
