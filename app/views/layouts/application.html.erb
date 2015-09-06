@@ -4,12 +4,23 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <title><%= content_for?(:title) ? yield(:title) : "foundation-rails" %></title>
+    <title>OTB Web Interface</title>
 
     <%= stylesheet_link_tag "application" %>
     <%= javascript_include_tag "vendor/modernizr" %>
     <%= javascript_include_tag "application", 'data-turbolinks-track' => true %>
     <%= csrf_meta_tags %>
+
+    <script type="text/javascript">
+        function getChannelName() {
+            $.getJSON(window.location.href + '/get_channel_name', function (data) {
+                $('#channelName').text(data);
+                $('#channelLinks').append($('<li/>').append($('<a/>').prop("href", "/dashboard/" + data + "/commands").text("Commands"))).append($('<li/>').append($('<a/>').prop("href", "/dashboard/" + data + "/aliases").text("Aliases"))).append($('<li/>').append($('<a/>').prop("href", "/dashboard/" + data + "/quotes").text("Quotes")));
+                document.title = data + " | OTB Web Interface";
+                $('#back').append('<%= image_tag "Arrow-Back-5-icon.png", size: "39x39" %>');
+            });
+        }
+    </script>
 </head>
 
 <body>
@@ -20,111 +31,32 @@
         <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large; is_hover: false; mobile_show_parent_link: false;">
             <ul class="title-area">
                 <li class="name">
-                    <h1><a href="/">Home</a></h1>
+                    <h1><a href="/" id="back"></a></h1>
                 </li>
                 <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
             </ul>
-            <% if content_for?(:channel) %>
-                <section class="top-bar-section">
-                    <ul class="right">
-                        <li><span id="channelLabel"><%= yield(:channel) %></span></li>
-                        <li>
-                            <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/alias');">Aliases</a>
-                        </li>
-                        <li>
-                            <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/quote');">Quotes</a>
-                        </li>
-                        <li class="has-dropdown ">
-                            <a href="#">Commands</a>
-                            <ul class="dropdown">
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/all');">
-                                        All
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/int');">
-                                        Internal
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/own');">
-                                        Broadcaster
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/own/all');">
-                                        Broadcaster and below
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/smd');">
-                                        Super-Moderator
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/smd/all');">
-                                        Super-Moderator and below
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/mod');">
-                                        Moderator
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/mod/all');">
-                                        Moderator and below
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/reg');">
-                                        Regular
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/reg/all');">
-                                        Regular and below
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/sub');">
-                                        Subscribers
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/sub/all');">
-                                        Subscriber and below
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a href="javascript:load('/dashboard/channel/<%= yield(:channel) %>/get/command/usr');">
-                                        Users
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </section>
-            <% end %>
-
-
+            <section class="top-bar-section">
+                <ul class="right" id="channelLinks">
+                </ul>
+            </section>
+            <section  class="top-bar-section"><ul><li><a style="font-size:100%;" id="channelName"></a></li></ul></section>
         </nav>
     </div>
+
 </div>
+
 <div id="loadingModal" class="reveal-modal" data-reveal aria-labelledby="firstModalTitle" aria-hidden="true" role="dialog">
     <div class="loader">LOADING...</div>
 </div>
 <div style="min-height: 80%" class="row fullWidth">
-    <div  class="small-12 medium-10 small-centered columns">
+    <div class="small-12 medium-10 small-centered columns">
         <%= yield %>
     </div>
 </div>
 <footer>
     <div style="background-color: #333333; padding: auto; height: 60px;" class="text-center">
-        <a style="margin: auto" href="http://otbproject.github.io" target="_blank">OTB Project</a><br>
-        <small>1.0.0-SNAPSHOT</small>
+        <a style="margin: auto" href="https://otbproject.github.io" target="_blank">OTB Project</a><br>
+        <small style="color: whitesmoke">Web Interface Version: 1.0-SNAPSHOT</small>
     </div>
 </footer>
 

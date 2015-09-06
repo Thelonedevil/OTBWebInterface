@@ -1,272 +1,80 @@
-<% content_for :title do %><%= params[:channel] %>
-<% end %>
-<% content_for :channel do %><%= params[:channel] %>
-<% end %>
-<div class="panel callout radius">
-    <h1 class="text-center">
-        <% all = params[:all].to_s %>
-        <% case params[:user_level].to_s %>
-        <% when 'all' %>
-            <%= "All commands for #{params[:channel].to_s}" %>
-        <% when 'usr' %>
-            <%= "Commands for a user of #{params[:channel].to_s}" %>
-        <% when 'sub' %>
-            <% if !all.nil? && all == 'all' %>
-                <%= "All commands for a subscriber of #{params[:channel].to_s}" %>
-            <% else %>
-                <%= "Subscriber commands for #{params[:channel].to_s}" %>
-            <% end %>
-        <% when 'reg' %>
-            <% if !all.nil? && all == 'all' %>
-                <%= "All commands for a regular of #{params[:channel].to_s}" %>
-            <% else %>
-                <%= "Regular commands for #{params[:channel].to_s}" %>
-            <% end %>
-        <% when 'mod' %>
-            <% if !all.nil? && all == 'all' %>
-                <%= "All commands for a moderator of #{params[:channel].to_s}" %>
-            <% else %>
-                <%= "Moderator commands for #{params[:channel].to_s}" %>
-            <% end %>
-        <% when 'smd' %>
-            <% if !all.nil? && all == 'all' %>
-                <%= "All commands for a super-moderator of #{params[:channel]}" %>
-            <% else %>
-                <%= "Super-Moderator commands for #{params[:channel]}" %>
-            <% end %>
-        <% when 'own' %>
-            <% if !all.nil? && all == 'all' %>
-                <%= "All commands for the broadcaster of #{params[:channel]}" %>
-            <% else %>
-                <%= "Broadcaster only commands for #{params[:channel]}" %>
-            <% end %>
-        <% when 'int' %>
-            <%= "Internal commands for #{params[:channel]}" %>
-        <% else %>
-        <% end %></h1>
-</div>
-<% if @writable %>
-    <div class="small-10 columns">
-        <a href="#" data-reveal-id='newModal' class="button expand">New</a>
-    </div>
-    <div id='newModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
-        <form id="ajax-new" method="post" action="">
-            <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-            <input name="action_type" id="action_type" type="hidden" value="new">
+<script type="text/javascript">
 
-            <div class="field">
-                <label for="command">Command:</label>
-                <input type='text' id='command' name='command' required>
-            </div>
-            <div class="field">
-                <label for="response">Response:</label>
-                <input type='text' placeholder="example response" id='response' name='response'>
-            </div>
-            <div class="field">
-                <label for="script">Script (optional; overrides 'Response'):</label>
-                <input type='text' id='script' name='script'>
-            </div>
-            <div class="field">
-                <label for="minArgs">Minimum Arguments:</label>
-                <input required type='number' id='minArgs' min="0" value='0' name='minArgs'>
-            </div>
-            <div class="field">
-                <label>Debug</label>
-                <select name="debug" title="debug">
-                    <option>False</option>
-                    <option>True</option>
-                </select>
-            </div>
-            <div class="field">
-                <label>Executing UserLevel:</label>
-                <select name="eUL" title="eUL">
-                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                    <% uls.each do |ul| %>
-                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                    <% end %>
-                </select>
-            </div>
-            <div class="field">
-                <label>Name Modifying UserLevel:</label>
-                <select name="nMUL" title="nMUL">
-                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                    <% uls.each do |ul| %>
-                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                    <% end %>
-                </select>
-            </div>
-            <div class="field">
-                <label>Response Modifying UserLevel:</label>
-                <select name="rMUL" title="rMUL">
-                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                    <% uls.each do |ul| %>
-                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                    <% end %>
-                </select>
-            </div>
-            <div class="field">
-                <label>UserLevel Modifying UserLevel:</label>
-                <select name="ulMUL" title="ulMUL">
-                    <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                    <% uls.each do |ul| %>
-                        <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                    <% end %>
-                </select>
-            </div>
 
-            <div class="field">
-                <button type="submit">Save</button>
+    $(document).ready(function () {
+        $("[name='below']").bootstrapSwitch();
+        getChannelName();
+        populateUserLevels();
+        on_userLevelChange();
+    });
+
+    function populateUserLevels() {
+        var userLevelsSelect = $('#user_level');
+        userLevelsSelect.append($("<option/>").val("ALL").text("All"));
+        $.getJSON('/dashboard/get_user_levels', function (data) {
+            $.each(data, function (index, userLevel) {
+                console.log(userLevel);
+                userLevelsSelect.append($("<option/>").val(userLevel).text(userLevel.capitalize()));
+            });
+        });
+    }
+
+    function on_userLevelChange() {
+        var userLevelsSelect = $('#user_level');
+        if (userLevelsSelect.val() == 'ALL' || userLevelsSelect.val() == "DEFAULT") {
+            $('#andBelow').addClass('hidden-for-small-up');
+        } else {
+            $('#andBelow').removeClass('hidden-for-small-up');
+        }
+        $.getJSON(window.location.href + '/get_commands', {
+            id: userLevelsSelect.val(),
+            below: !$('#below').prop("checked")
+        }, function (data) {
+            var table = $('#tableBodyCommands');
+            table.find('tr').remove().end();
+            $.each(data, function (index, command) {
+                var response = command.script == null ? command.response : "[SCRIPT] ".bold() + command.script;
+                table.append($('<tr/>').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())));
+            });
+        });
+    }
+</script>
+<h4 class="text-center">Commands</h4>
+<form>
+    <div class="row">
+        <div class="large-6 columns small-centered">
+            <div class="row collapse prefix-radius">
+                <div class="small-3 columns small-offset-3">
+                    <span class="prefix">User Level </span>
+                </div>
+                <div class="small-3 columns end">
+                    <label for="user_level"></label>
+                    <select id="user_level" onchange="on_userLevelChange()"></select>
+                </div>
             </div>
-        </form>
-        <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+        </div>
     </div>
-    <div class="small-2 columns">
-        <a href="javascript:load(window.location.href);" class="button expand">Reload</a>
+    <div id="andBelow" class="row hidden-for-small-up" style="margin-bottom: 20px;">
+        <div class="large-6 columns small-centered">
+            <div class="row collapse prefix-radius">
+                <div class="small-6 small-offset-3 end columns" style="text-align: center;">
+                    <input onchange="on_userLevelChange()" data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Exact" type="checkbox" name="below" id="below"/>
+                    <label for="below"></label>
+                </div>
+            </div>
+        </div>
     </div>
-<% end %>
-<table class="responsive">
+</form>
+
+<table>
     <thead>
     <tr>
-        <th width="150">Name</th>
-        <th width="100%">Response/Script</th>
-        <th width="150">User Level</th>
-        <% if @writable %>
-            <th></th>
-        <% end %>
+        <th style="min-width: 200px">Name</th>
+        <th style="width: 100%;">Response/Script</th>
+        <th style="min-width: 200px">User Level</th>
     </tr>
     </thead>
-    <tbody>
-    <% index=0 %>
-    <% @command.each do |command| %>
-        <% enabled = command.enabled == 'true' %>
-        <%= enabled ? raw('<tr>') : raw('<tr title="This Command is DISABLED" style="background-color: #F9D2D4; cursor: help;">') %>
-        <td><%= command.name %></td>
-        <td><%= command.script.nil? ? command.response : raw('<b>[Script]</b>')+" #{command.script}" %></td>
-        <td><%= command.execUserLevel.capitalize! %></td>
-        <% if @writable %>
-            <td>
-                <div>
-                    <%= raw("<a href='#' style='margin: auto' data-reveal-id='editModal-#{index}' class='button small split'>") %>
-                    Edit <%= raw("<span data-dropdown='drop-#{index}'>") %></span></a>
-                </div><%= raw("<ul id='drop-#{index}' class='f-dropdown' data-dropdown-content>") %>
-                <li>
-                    <%= raw("<form id='ajax-toggle-#{index}' method='post' action=''>") %>
-                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-                    <input name="action_type" id="action_type" type="hidden" value="toggle">
-                    <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name}'>") %>
-                    <%= raw("<a id='ajax-toggle-submit-#{index}' href=''>") %><%= enabled ? 'Disable' : 'Enable' %></a>
-                    </form>
-                    <script>
-                        var anchor = document.getElementById("<%="ajax-toggle-submit-#{index}" %>");
-                        anchor.addEventListener('click', function () {
-                            document.getElementById('<%="ajax-toggle-#{index}"%>').submit();
-
-                        }, false);
-                    </script>
-                </li>
-                <li><%= raw("<a data-reveal-id='deleteModal-#{index}' href='#'>Delete</a>") %></li>
-                </ul>
-                <%= raw("<div id='editModal-#{index}' class='reveal-modal' data-options='close_on_background_click: false;' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
-                <form id="ajax-edit" method="post" action="">
-                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-                    <input name="action_type" id="action_type" type="hidden" value="edit">
-                    <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name.to_s}'>") %>
-                    <div class="field">
-                        <label for="command">Command:</label>
-                        <%= raw("<input type='text' id='command' name='command' required value='#{command.name.to_s}'>") %>
-                    </div>
-
-                    <div class="field">
-                        <label for="response">Response:</label>
-                        <%= raw("<input type='text' id='response' name='response'") %><%= command.script.nil? ? raw(" value='#{command.response.to_s}' required>") : raw('readonly>') %>
-                    </div>
-
-                    <div class="field">
-                        <label for="script">Script:</label>
-                        <%= raw("<input readonly type='text' id='script' name='script' value='#{command.script.to_s}'>") %>
-                    </div>
-
-                    <div class="field">
-                        <label for="minArgs">Minimum Arguments:</label>
-                        <%= raw("<input required type='text' id='minArgs' name='minArgs' value='#{command.minArgs.to_s}'>") %>
-                    </div>
-                    <div class="field">
-                        <label>Executing UserLevel:</label>
-                        <select name="eUL" title="eUL">
-                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                            <% uls.each do |ul| %>
-                                <% if command.execUserLevel.upcase.eql? ul %>
-                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
-                                <% else %>
-                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                                <% end %>
-                            <% end %>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Name Modifying UserLevel:</label>
-                        <select name="nMUL" title="nMUL">
-                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                            <% uls.each do |ul| %>
-                                <% if command.nameModifyingUL.upcase.eql? ul %>
-                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
-                                <% else %>
-                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                                <% end %>
-                            <% end %>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Response Modifying UserLevel:</label>
-                        <select name="rMUL" title="rMUL">
-                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                            <% uls.each do |ul| %>
-                                <% if command.responseModifyingUL.upcase.eql? ul %>
-                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
-                                <% else %>
-                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                                <% end %>
-                            <% end %>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>UserLevel Modifying UserLevel:</label>
-                        <select name="ulMUL" title="ulMUL">
-                            <% uls = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL) %>
-                            <% uls.each do |ul| %>
-                                <% if command.userLevelModifyingUL.upcase.eql? ul %>
-                                    <%= raw("<option selected>#{ul.to_s.capitalize}</option>") %>
-                                <% else %>
-                                    <%= raw("<option>#{ul.to_s.capitalize}</option>") %>
-                                <% end %>
-                            <% end %>
-                        </select>
-                    </div>
-
-                    <div class="field">
-                    </div>
-                    <div class="field">
-                        <button type="submit">Save</button>
-                    </div>
-                </form>
-                <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-                </div>
-                <%= raw("<div id='deleteModal-#{index}' class='reveal-modal' data-options='close_on_background_click: false;' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'> ") %>
-                <%= raw("<form id='ajax-delete-#{index}' method='post' action=''>") %>
-                <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-                <input name="action_type" id="action_type" type="hidden" value="delete">
-                <%= raw("<input type='hidden' id='old_command' name='old_command' value='#{command.name.to_s}'>") %>
-                <input required type="checkbox" name="confirm" value="confirm"> Confirm that you want to delete the
-                command: <%= command.name.to_s %> </br>
-                <button class="alert" type="submit">Delete</button>
-                </form>
-                <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-                </div>
-            </td>
-        <% end %>
-        </tr>
-        <% index+=1 %>
-    <% end %>
+    <tbody id="tableBodyCommands">
     </tbody>
 </table>
 
