@@ -1,10 +1,11 @@
 require 'json'
 require 'ipaddr'
+require 'java'
+
 class DashboardController < ApplicationController
 
-
   def allowed?
-    file = File.read("#{Dir.home}/.otbproject/config/web-config.json")
+    file = File.read("#{::DIR_BASE}/config/web-config.json")
     data = JSON.parse file
     ip_addresses_with_prefix = data['writableWhitelist'].to_a
     ip_addresses_with_prefix.each do |i|
@@ -18,7 +19,7 @@ class DashboardController < ApplicationController
   end
 
   def commands_edit
-    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "~/.otbproject/data/channels/#{params[:channel]}/main.db"
+    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "#{::DIR_BASE}/data/channels/#{params[:channel]}/main.db"
     if params.has_key? :old_command
       command = Command.find_by_name params[:old_command].to_s
     else
@@ -74,14 +75,14 @@ class DashboardController < ApplicationController
 
 
   def get_quotes
-    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "~/.otbproject/data/channels/#{params[:channel]}/quotes.db"
+    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "#{::DIR_BASE}/data/channels/#{params[:channel]}/quotes.db"
     quote = Quote.all
     quote.to_a.sort!
     render :json => quote.to_json
   end
 
   def get_aliases
-    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "~/.otbproject/data/channels/#{params[:channel]}/main.db"
+    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "#{::DIR_BASE}/data/channels/#{params[:channel]}/main.db"
     aliases = Alias.all
     aliases.to_a.sort!
     render :json => aliases.to_json
@@ -120,7 +121,7 @@ class DashboardController < ApplicationController
     if user_level == 'ALL'
       user_level = %w(DEFAULT SUBSCRIBER REGULAR MODERATOR SUPER_MODERATOR BROADCASTER INTERNAL)
     end
-    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "~/.otbproject/data/channels/#{params[:channel]}/main.db"
+    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "#{::DIR_BASE}/data/channels/#{params[:channel]}/main.db"
     commands = Command.where execUserLevel: user_level
     commands.to_a.sort!
     render :json => commands.to_json

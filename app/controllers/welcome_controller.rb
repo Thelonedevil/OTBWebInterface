@@ -1,8 +1,9 @@
+require 'java'
 class WelcomeController < ApplicationController
   def index
-    Dir.chdir Dir.home
+    Dir.chdir ::DIR_BASE
     @channels = []
-    Dir.foreach'.otbproject/data/channels' do |item|
+    Dir.foreach ::DIR_BASE+'/data/channels' do |item|
       next if item == '.' or item=='..'
       @channels << item
     end
