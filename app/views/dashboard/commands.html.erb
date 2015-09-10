@@ -15,8 +15,16 @@
 
     });
 
-    function editCommand(command){
-        alert("AHH dont edit the command: "+command);
+    function editCommand(command) {
+        alert("AHH dont edit the command: " + command);
+
+    }
+    function toggleCommand(command) {
+        alert("AHH dont enable/disable the command: " + command);
+
+    }
+    function deleteCommand(command) {
+        alert("AHH dont delete the command: " + command);
 
     }
 
@@ -47,7 +55,7 @@
                 on_userLevelChange();
                 $('#newModal').foundation('reveal', 'close');
             } else if (result == '0') {
-                $('#newModal').append($('<div/>').attr('data-alert','').attr('role','alertdialog').addClass('alert-box alert').text('This Command '+$('#command').val()+' already exists for this channel!')/*.append($('<button/>').addClass('close').html('&times;'))*/);
+                $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('This Command ' + $('#command').val() + ' already exists for this channel!')/*.append($('<button/>').addClass('close').html('&times;'))*/);
             }
         });
     }
@@ -70,13 +78,26 @@
 
                         if (command.enabled == 'true') {
                             if (writable) {
-                                table.append($('<tr/>').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())).append($('<td/>').append($('<a/>').addClass('button tiny').attr('onclick', "editCommand('"+command.name+"')").text('Edit')).append($('<button/>').addClass('button tiny').text('v').attr('data-dropdown','drop-'+index))).append($('<ul/>').addClass('f-dropdown').attr('id','drop-'+index).attr('data-dropdown-content','').append($('<li/>').text('1') ).append($('<li/>').text('2') ).append($('<li/>').text('3') )  /*insert writable options here*/));
+                                table.append($('<tr/>').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize()))
+                                        .append($('<td/>').append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
+                                            .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
+                                                .append($('<li/>').append($('<a/>').attr('onclick', "editCommand('" + command.name + "')").text('Edit')))
+                                                .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand('" + command.name + "')").text('Disable')))
+                                                .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand('" + command.name + "')").text('Delete')))
+                                        )));
                             } else {
                                 table.append($('<tr/>').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())));
                             }
                         } else {
                             if (writable) {
-                                table.append($('<tr/>').prop('title', 'This Command is DISABLED').prop('style', 'background-color: #F9D2D4; cursor: help;').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())).append($('<td/>') /*insert writable options here*/));
+                                table.append($('<tr/>').prop('title', 'This Command is DISABLED').prop('style', 'background-color: #F9D2D4; cursor: help;')
+                                        .append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize()))
+                                        .append($('<td/>').append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
+                                                .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
+                                                        .append($('<li/>').append($('<a/>').attr('onclick', "editCommand('" + command.name + "')").text('Edit')))
+                                                        .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand('" + command.name + "')").text('Enable')))
+                                                        .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand('" + command.name + "')").text('Delete')))
+                                        )));
                             } else {
                                 table.append($('<tr/>').prop('title', 'This Command is DISABLED').prop('style', 'background-color: #F9D2D4; cursor: help;').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())));
                             }
@@ -84,6 +105,7 @@
                     }
             )
             ;
+            $(document).foundation('dropdown', 'reflow');
         });
     }
 </script>
