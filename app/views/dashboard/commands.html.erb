@@ -20,6 +20,12 @@
 
     }
     function toggleCommand(command) {
+        $.post(window.location.href +"/toggle_command",{old_command: command,action_type: 'toggle'}, function (result){
+            if (result == '1') {
+                on_userLevelChange();
+            } else if (result == '0') {
+            }
+        });
         alert("AHH dont enable/disable the command: " + command);
 
     }
