@@ -93,7 +93,7 @@ class DashboardController < ApplicationController
   end
 
   def get_command
-    render :json => Command.find_by_name(params[:command].to_s.split ' ').as_json
+    render :json => Command.find_by_name(params[:command].to_s.split[0]).as_json
   end
 
   def get_commands
