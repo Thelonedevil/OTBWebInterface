@@ -13,8 +13,34 @@
         getChannelName();
         populateUserLevels();
         on_userLevelChange();
-
     });
+
+    $(document).on('closed.fndtn.reveal', '[data-reveal]', resetModals());
+
+    function resetModals(){
+        $('#newCommand').val("");
+        $('#newResponse').val("");
+        $('#newScript').val("");
+        $('#newDebug').val("false");
+        $('#newMinArgs').val(0);
+        $('#newEUL').val("DEFAULT");
+        $('#newRMUL').val("DEFAULT");
+        $('#newNMUL').val("DEFAULT");
+        $('#newULMUL').val("DEFAULT");
+
+        $('#editOldCommand').val("");
+        $('#editCommand').val("");
+        $('#editResponse').val("");
+        $('#editScript').val("");
+        $('#editDebug').val("false");
+        $('#editMinArgs').val(0);
+        $('#editEUL').val("DEFAULT");
+        $('#editRMUL').val("DEFAULT");
+        $('#editNMUL').val("DEFAULT");
+        $('#editULMUL').val("DEFAULT");
+
+        $('#deleteConfirm').removeProp('checked');
+    }
 
     function editCommand(command) {
         $('#editOldCommand').val(command);
@@ -70,7 +96,6 @@
             $.post(window.location.href + '/delete_command', $('#ajax-delete').serialize(), function () {
                 on_userLevelChange();
                 $('#deleteModal').foundation('reveal', 'close');
-                $('#deleteConfirm').removeProp('checked');
             });
         }
     }
@@ -97,14 +122,18 @@
     }
     function addNewCommand() {
         var formData = $('#ajax-new').serialize();
-        $.post(window.location.href + '/add_command', formData, function (result) {
-            if (result == '1') {
-                on_userLevelChange();
-                $('#newModal').foundation('reveal', 'close');
-            } else if (result == '0') {
-                $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('This Command ' + $('#command').val() + ' already exists for this channel!')/*.append($('<button/>').addClass('close').html('&times;'))*/);
-            }
-        });
+        if($('#newCommand').val() === ""){
+            $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('You need to enter a command name!'));
+        }else {
+            $.post(window.location.href + '/add_command', formData, function (result) {
+                if (result == '1') {
+                    on_userLevelChange();
+                    $('#newModal').foundation('reveal', 'close');
+                } else if (result == '0') {
+                    $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('This Command ' + $('#command').val() + ' already exists for this channel!')/*.append($('<button/>').addClass('close').html('&times;'))*/);
+                }
+            });
+        }
     }
 
     function on_userLevelChange() {
@@ -114,26 +143,6 @@
         } else {
             $('#andBelow').removeClass('hidden-for-small-up');
         }
-
-        $('#newCommand').val("");
-        $('#newResponse').val("");
-        $('#newScript').val("");
-        $('#newDebug').val("false");
-        $('#newMinArgs').val(0);
-        $('#newEUL').val("DEFAULT");
-        $('#newRMUL').val("DEFAULT");
-        $('#newNMUL').val("DEFAULT");
-        $('#newULMUL').val("DEFAULT");
-
-        $('#editCommand').val("");
-        $('#editResponse').val("");
-        $('#editScript').val("");
-        $('#editDebug').val("false");
-        $('#editMinArgs').val(0);
-        $('#editEUL').val("DEFAULT");
-        $('#editRMUL').val("DEFAULT");
-        $('#editNMUL').val("DEFAULT");
-        $('#editULMUL').val("DEFAULT");
 
         $.getJSON(window.location.href + '/get_commands', {
             id: userLevelsSelect.val(),
