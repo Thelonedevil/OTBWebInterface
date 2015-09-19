@@ -17,7 +17,7 @@
 
     $(document).on('closed.fndtn.reveal', '[data-reveal]', resetModals());
 
-    function resetModals(){
+    function resetModals() {
         $('#newCommand').val("");
         $('#newResponse').val("");
         $('#newScript').val("");
@@ -122,9 +122,9 @@
     }
     function addNewCommand() {
         var formData = $('#ajax-new').serialize();
-        if($('#newCommand').val() === ""){
+        if ($('#newCommand').val() === "") {
             $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('You need to enter a command name!'));
-        }else {
+        } else {
             $.post(window.location.href + '/add_command', formData, function (result) {
                 if (result == '1') {
                     on_userLevelChange();
@@ -151,32 +151,47 @@
             var table = $('#tableBodyCommands');
             table.find('tr').remove().end();
             $.each(data, function (index, command) {
-                        var response = command.script == null ? command.response : "[SCRIPT] ".bold() + command.script;
+                        var response = command.script == null ? command.response.toString().escapeHtml() : "[SCRIPT] ".bold() + command.script.toString().escapeHtml();
 
                         if (command.enabled == 'true') {
                             if (writable) {
-                                table.append($('<tr/>').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize()))
-                                        .append($('<td/>').append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
-                                                .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
-                                                        .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
-                                                        .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Disable')))
-                                                        .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete')))
-                                        )));
+                                table.append($('<tr/>')
+                                                .append($('<td/>').text(command.name))
+                                                .append($('<td/>').html(response))
+                                                .append($('<td/>').text(command.execUserLevel.capitalize()))
+                                                .append($('<td/>')
+                                                        .append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
+                                                        .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
+                                                                .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
+                                                                .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Disable')))
+                                                                .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete')))))
+                                );
                             } else {
-                                table.append($('<tr/>').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())));
+                                table.append($('<tr/>')
+                                                .append($('<td/>').text(command.name))
+                                                .append($('<td/>').html(response))
+                                                .append($('<td/>').text(command.execUserLevel.capitalize()))
+                                );
                             }
                         } else {
                             if (writable) {
                                 table.append($('<tr/>').prop('title', 'This Command is DISABLED').attr('style', 'background-color: #F9D2D4; cursor: help;')
-                                        .append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize()))
-                                        .append($('<td/>').append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
-                                                .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
-                                                        .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
-                                                        .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Enable')))
-                                                        .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete')))
-                                        )));
+                                                .append($('<td/>').text(command.name))
+                                                .append($('<td/>').html(response))
+                                                .append($('<td/>').text(command.execUserLevel.capitalize()))
+                                                .append($('<td/>')
+                                                        .append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
+                                                        .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
+                                                                .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
+                                                                .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Enable')))
+                                                                .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete')))))
+                                );
                             } else {
-                                table.append($('<tr/>').prop('title', 'This Command is DISABLED').attr('style', 'background-color: #F9D2D4; cursor: help;').append($('<td/>').text(command.name)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())));
+                                table.append($('<tr/>').prop('title', 'This Command is DISABLED').attr('style', 'background-color: #F9D2D4; cursor: help;')
+                                                .append($('<td/>').text(command.name))
+                                                .append($('<td/>').html(response))
+                                                .append($('<td/>').text(command.execUserLevel.capitalize()))
+                                );
                             }
                         }
                     }
@@ -304,7 +319,7 @@
         <label for="deleteCommand">Confirm that you want to
             delete the
             command: <span id="deleteCommand"></span></label>
-        <input required  data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Delete"  type="checkbox" id="deleteConfirm" name="confirm" value="confirm">
+        <input required data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Delete" type="checkbox" id="deleteConfirm" name="confirm" value="confirm">
         <br/>
         <a class="button alert" onclick="doDeleteCommand()">Confirm Delete</a>
     </form>

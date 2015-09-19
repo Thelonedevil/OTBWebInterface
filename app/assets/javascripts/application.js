@@ -25,6 +25,18 @@ String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
 };
 
+String.prototype.escapeHtml = function(){
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+
+    return this.replace(/[&<>"']/g, function(m) { return map[m]; });
+};
+
 function load(url) {
 
     $('#loadingModal').foundation('reveal', 'open');

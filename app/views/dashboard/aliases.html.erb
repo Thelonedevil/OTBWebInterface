@@ -1,24 +1,158 @@
 <script type="text/javascript">
+    var writable;
+
     function getAliases() {
         $.getJSON(window.location.href + '/get_aliases', function (data) {
-                console.log(data);
+            console.log(data);
             var table = $('#tableBodyAliases');
             table.find('tr').remove().end();
             $.each(data, function (index, alias) {
-                $.getJSON(window.location.href + '/get_command', {command: alias.command}, function(command){
+                $.getJSON(window.location.href + '/get_command', {command: alias.command}, function (command) {
+                    if(command === null){
+                        console.log(alias.name);
+                        return;
+                    }
                     var response = command.script == null ? command.response : "[SCRIPT] ".bold() + command.script;
-                    table.append($('<tr/>').append($('<td/>').text(alias.name)).append($('<td/>').text(alias.command)).append($('<td/>').html(response)).append($('<td/>').text(command.execUserLevel.capitalize())));
+                    if (alias.enabled == "true") {
+                        if (writable) {
+                            table.append($('<tr/>')
+                                            .append($('<td/>').text(alias.name))
+                                            .append($('<td/>').text(alias.command))
+                                            .append($('<td/>').html(response))
+                                            .append($('<td/>').text(command.execUserLevel.capitalize()))
+                                            .append($('<td/>')
+                                                    .append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
+                                                    .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
+                                                            .append($('<li/>').append($('<a/>').attr('onclick', "editAlias(\"" + alias.name + "\")").text('Edit')))
+                                                            .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Disable')))
+                                                            .append($('<li/>').append($('<a/>').attr('onclick', "deleteAlias(\"" + alias.name + "\")").text('Delete')))))
+                            );
+                        } else {
+                            table.append($('<tr/>')
+                                            .append($('<td/>').text(alias.name))
+                                            .append($('<td/>').text(alias.command))
+                                            .append($('<td/>').html(response))
+                                            .append($('<td/>').text(command.execUserLevel.capitalize()))
+                            );
+                        }
+                    } else {
+                        if (writable) {
+                            table.append($('<tr/>').prop('title', 'This Alias is DISABLED').attr('style', 'background-color: #F9D2D4; cursor: help;')
+                                            .append($('<td/>').text(alias.name))
+                                            .append($('<td/>').text(alias.command))
+                                            .append($('<td/>').html(response))
+                                            .append($('<td/>').text(command.execUserLevel.capitalize()))
+                                            .append($('<td/>')
+                                                    .append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
+                                                    .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
+                                                            .append($('<li/>').append($('<a/>').attr('onclick', "editAlias(\"" + alias.name + "\")").text('Edit')))
+                                                            .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Enable')))
+                                                            .append($('<li/>').append($('<a/>').attr('onclick', "deleteAlias(\"" + alias.name + "\")").text('Delete')))))
+                            );
+                        } else {
+                            table.append($('<tr/>').prop('title', 'This Alias is DISABLED').attr('style', 'background-color: #F9D2D4; cursor: help;')
+                                            .append($('<td/>').text(alias.name))
+                                            .append($('<td/>').text(alias.command))
+                                            .append($('<td/>').html(response))
+                                            .append($('<td/>').text(command.execUserLevel.capitalize()))
+                            );
+                        }
+
+                    }
                 });
 
             });
 
         });
     }
+
+    function newAlias() {
+        $('#newModal').foundation('reveal', 'open');
+    }
+    function addNewAlias(){
+
+    }
+
     $(document).ready(function () {
+        $.getJSON('/dashboard/is_whitelisted', function (data) {
+            if (data == '1') {
+                $('#tableHeadCommands').append($('<th/>').append($('<a/>').addClass('button tiny').attr('onclick', 'newCommand()').text('New')));
+                writable = true;
+            }
+        });
         getChannelName();
         getAliases();
     });
 </script>
+
+<div id='newModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
+    <form id="ajax-new">
+        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+        <input name="action_type" id="action_type" type="hidden" value="new">
+
+        <div class="field">
+            <label for="alias">Alias:</label>
+            <input type='text' id='newAlias' name='alias' required>
+        </div>
+
+        <div class="field">
+            <label for="command">Command:</label>
+            <input type='text' id='newCommand' name='command' required>
+        </div>
+        <div class="field">
+            <label>Modifying UserLevel:</label>
+            <select class="userLevels" id="newMUL" name="mUL">
+            </select>
+        </div>
+
+        <div class="field">
+            <a class="button" onclick="addNewAlias()">Save</a>
+        </div>
+    </form>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+<div id='editModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
+    <form id="ajax-edit">
+        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+        <input name="old_alias" id="editOldAlias" type="hidden">
+        <input name="action_type" id="action_type" type="hidden" value="edit">
+
+        <div class="field">
+            <label for="alias">Alias:</label>
+            <input type='text' id='editAlias' name='alias' required>
+        </div>
+
+        <div class="field">
+            <label for="command">Command:</label>
+            <input type='text' id='editCommand' name='command' required>
+        </div>
+        <div class="field">
+            <label>Modifying UserLevel:</label>
+            <select class="userLevels" id="editMUL" name="mUL">
+            </select>
+        </div>
+
+        <div class="field">
+            <a class="button" onclick="doEditAlias()" id="editSubmit">Save</a>
+        </div>
+    </form>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+<div id='deleteModal' class='reveal-modal' data-options='close_on_background_click: false;' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'>
+    <form id='ajax-delete'>
+        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+        <input name="action_type" id="action_type" type="hidden" value="delete">
+        <input type='hidden' id='deleteOldAlias' name='old_alias'>
+        <label for="deleteAlias">Confirm that you want to
+            delete the
+            alias: <span id="deleteAlias"></span></label>
+        <input required data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Delete" type="checkbox" id="deleteConfirm" name="confirm" value="confirm">
+        <br/>
+        <a class="button alert" onclick="doDeleteAlias()">Confirm Delete</a>
+    </form>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
 <h4 class="text-center">Aliases</h4>
 <table>
     <thead>
