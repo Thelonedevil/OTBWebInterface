@@ -1,21 +1,20 @@
 <% content_for :title do %><%= 'Home' %>
 <% end %>
 <div xmlns="http://www.w3.org/1999/html">
-    <script>$(document).foundation('dropdown', 'reflow');</script>
+    <div class="row"></div>
     <% @channels.each do |channel| %>
-        <a style="min-width:200px" data-dropdown="drop-<%= channel %>" class="button"><%= channel %></a>
+        <div class="dropdown col-xs-4 col-sm-3 col-md-2">
+            <button class="btn btn-block btn-primary dropdown-toggle" type="button" id="dropdownMenu-<%=channel %>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                <%= channel %>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu-<%=channel %>">
+                <li><a href="/dashboard/<%= channel %>/aliases">Aliases</a></li>
+                <li><a href="/dashboard/<%= channel %>/quotes">Quotes</a></li>
+                <li><a href="/dashboard/<%= channel %>/commands">Commands</a></li>
 
-        <div id="drop-<%= channel %>" class="f-dropdown content text-center" data-dropdown-content aria-hidden="true" tabindex="-1">
-            <span><a href="/dashboard/<%= channel %>/aliases">Aliases</a></span>
-            <br>
-            <span><a href="/dashboard/<%= channel %>/quotes">Quotes</a></span>
-            <br>
-            <span><a href="/dashboard/<%= channel %>/commands">Commands</a></span>
-
-
+            </ul>
         </div>
+
     <% end %>
-    <div id="loadingModal" class="reveal-modal" data-reveal aria-labelledby="firstModalTitle" aria-hidden="true" role="dialog">
-        <div class="loader">LOADING...</div>
-    </div>
 </div>

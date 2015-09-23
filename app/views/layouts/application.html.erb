@@ -17,7 +17,7 @@
                 $('#channelName').text(data);
                 $('#channelLinks').append($('<li/>').append($('<a/>').prop("href", "/dashboard/" + data + "/commands").text("Commands"))).append($('<li/>').append($('<a/>').prop("href", "/dashboard/" + data + "/aliases").text("Aliases"))).append($('<li/>').append($('<a/>').prop("href", "/dashboard/" + data + "/quotes").text("Quotes")));
                 document.title = data + " | OTB Web Interface";
-                $('#back').append('<%= image_tag "Arrow-Back-5-icon.png", size: "39x39" %>');
+                $('#back').append('<span/>').addClass('glyphicon glyphicon-arrow-left');
             });
         }
     </script>
@@ -25,39 +25,55 @@
 
 <body>
 <div class="panel" style="padding-left: 0;padding-right: 0;padding-bottom: 0;">
-    <h1 class="text-center">OTB Web Interface</h1>
 
-    <div class="sticky">
-        <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large; is_hover: false; mobile_show_parent_link: false;">
-            <ul class="title-area">
-                <li class="name">
-                    <h1><a href="/" id="back"></a></h1>
-                </li>
-                <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
-            </ul>
-            <section class="top-bar-section">
-                <ul class="right" id="channelLinks">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li class="pull-left"><a href="/" id="back"></a></li>
+                    <li class="pull-left"><a style="font-size:100%;" id="channelName"></a></li>
+                    <li><a class="text-center">OTB Web Interface</a></li>
+                    <li class="pull-right">
+                        <ul class="nav navbar-nav" id="channelLinks">
+
+                        </ul>
+                    </li>
                 </ul>
-            </section>
-            <section  class="top-bar-section"><ul><li><a style="font-size:100%;" id="channelName"></a></li></ul></section>
-        </nav>
-    </div>
+
+            </div>
+        </div>
+    </nav>
 
 </div>
 
-<div id="loadingModal" class="reveal-modal" data-reveal aria-labelledby="firstModalTitle" aria-hidden="true" role="dialog">
-    <div class="loader">LOADING...</div>
-</div>
-<div style="min-height: 80%" class="row fullWidth">
-    <div class="small-12 medium-10 small-centered columns">
+<div style="min-height: 80% !important;" class="row fullWidth">
+    <div class="col-sm-12 col-md-10 col-md-offset-1">
         <%= yield %>
     </div>
 </div>
-<footer>
-    <div style="background-color: #333333; padding: auto; height: 60px;" class="text-center">
-        <a style="margin: auto" href="https://otbproject.github.io" target="_blank">OTB Project</a><br>
-        <small style="color: whitesmoke">Web Interface Version: 1.0-SNAPSHOT</small>
+<footer class="navbar-inverse">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-4 col-xs-offset-4 text-center">
+                <ul class="nav navbar-nav">
+                    <li><a href="https://otbproject.github.io" target="_blank">OTB Project</a></li>
+                    <li><a>Web Interface Version: 1.1-SNAPSHOT</a></li>
+                </ul>
+
+
+            </div>
+        </div>
     </div>
+
+
 </footer>
 
 </body>

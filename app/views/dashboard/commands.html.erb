@@ -4,7 +4,7 @@
     $(document).ready(function () {
         $.getJSON('/dashboard/is_whitelisted', function (data) {
             if (data == '1') {
-                $('#tableHeadCommands').append($('<th/>').append($('<a/>').addClass('button tiny').attr('onclick', 'newCommand()').text('New')));
+                $('#tableHeadCommands').append($('<th/>').append($('<button/>').addClass('btn btn-primary').attr('onclick', 'newCommand()').text('New')));
                 writable = true;
             }
         });
@@ -14,8 +14,6 @@
         populateUserLevels();
         on_userLevelChange();
     });
-
-    $(document).on('closed.fndtn.reveal', '[data-reveal]', resetModals());
 
     function resetModals() {
         $('#newCommand').val("");
@@ -60,16 +58,17 @@
             $('#editNMUL').val(result.nameModifyingUL);
             $('#editRMUL').val(result.responseModifyingUL);
             $('#editULMUL').val(result.userLevelModifyingUL);
-            $('#editModal').foundation('reveal', 'open');
+            $('#editModal').modal();
         });
     }
 
     function doEditCommand() {
-        $.post(window.location.href + '/edit_command', $('#ajax-edit').serialize(), function () {
-            on_userLevelChange();
-            $('#editModal').foundation('reveal', 'close');
-        });
-
+        if (formValidate('edit')) {
+            $.post(window.location.href + '/edit_command', $('#ajax-edit').serialize(), function () {
+                on_userLevelChange();
+                $('#editModal').modal("hide");
+            });
+        }
 
     }
     function toggleCommand(command) {
@@ -87,23 +86,42 @@
     function deleteCommand(command) {
         $('#deleteOldCommand').val(command);
         $('#deleteCommand').text(command);
-        $('#deleteModal').foundation('reveal', 'open');
-
+        $('#deleteModal').modal();
     }
 
     function doDeleteCommand() {
         if ($('#deleteConfirm').is(':checked')) {
             $.post(window.location.href + '/delete_command', $('#ajax-delete').serialize(), function () {
                 on_userLevelChange();
-                $('#deleteModal').foundation('reveal', 'close');
+                $('#deleteModal').modal("hide");
             });
         }
     }
 
+    function formValidate(action) {
+        var noResponse = $('<div/>');
+
+        switch (action) {
+            case 'new':
+                var commandName = $('#newCommand');
+                var commandResponse = $('#newResponse');
+                var commandScript = $('#newScript');
+                var script = commandScript.val().toString() !== "" && commandResponse.val().toString() === "";
+                var response = commandScript.val().toString() !== "" && commandScript.val().toString() === "";
+                return true;
+                break;
+            case 'edit':
+                return true;
+                break;
+        }
+
+    }
+
+
     function newCommand() {
         // $('body').append($('<div/>',{id: 'newModal', role:'dialog'}));
         //$('#newModal').attr('data-reveal','').attr('aria-labelledby','modalTitle').attr('aria-hidden', 'true').attr('data-options', 'close_on_background_click: false;').foundation('reveal', 'open');
-        $('#newModal').foundation('reveal', 'open');
+        $('#newModal').modal();
 
     }
 
@@ -121,27 +139,34 @@
         });
     }
     function addNewCommand() {
-        var formData = $('#ajax-new').serialize();
-        if ($('#newCommand').val() === "") {
-            $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('You need to enter a command name!'));
-        } else {
-            $.post(window.location.href + '/add_command', formData, function (result) {
-                if (result == '1') {
-                    on_userLevelChange();
-                    $('#newModal').foundation('reveal', 'close');
-                } else if (result == '0') {
-                    $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('This Command ' + $('#command').val() + ' already exists for this channel!')/*.append($('<button/>').addClass('close').html('&times;'))*/);
-                }
-            });
+        if (formValidate('new')) {
+            var formData = $('#ajax-new').serialize();
+            if ($('#newCommand').val() === "") {
+                $('#newModalBody').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('You need to enter a command name!'));
+            } else {
+                $.post(window.location.href + '/add_command', formData, function (result) {
+                    if (result == '1') {
+                        on_userLevelChange();
+                        $('#newModal').modal("hide");
+                    } else if (result == '0') {
+                        $('#newModalBody').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('This Command ' + $('#command').val() + ' already exists for this channel!')/*.append($('<button/>').addClass('close').html('&times;'))*/);
+                    }
+                });
+            }
         }
     }
 
     function on_userLevelChange() {
         var userLevelsSelect = $('#user_level');
+        var div = $('#andBelow');
         if (userLevelsSelect.val() == 'ALL' || userLevelsSelect.val() == "DEFAULT") {
-            $('#andBelow').addClass('hidden-for-small-up');
+
+            div.removeClass('show');
+            div.addClass('hidden');
         } else {
-            $('#andBelow').removeClass('hidden-for-small-up');
+
+            div.removeClass('hidden');
+            div.addClass('show');
         }
 
         $.getJSON(window.location.href + '/get_commands', {
@@ -160,11 +185,12 @@
                                                 .append($('<td/>').html(response))
                                                 .append($('<td/>').text(command.execUserLevel.capitalize()))
                                                 .append($('<td/>')
-                                                        .append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
-                                                        .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
-                                                                .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
-                                                                .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Disable')))
-                                                                .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete')))))
+                                                        .append($('<div/>').addClass('dropdown')
+                                                                .append($('<button/>').addClass('btn btn-primary dropdown-toggle').attr('href', '#').attr('data-toggle', 'dropdown').text('Edit'))
+                                                                .append($('<ul/>').addClass('dropdown-menu')
+                                                                        .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
+                                                                        .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Disable')))
+                                                                        .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete'))))))
                                 );
                             } else {
                                 table.append($('<tr/>')
@@ -180,11 +206,12 @@
                                                 .append($('<td/>').html(response))
                                                 .append($('<td/>').text(command.execUserLevel.capitalize()))
                                                 .append($('<td/>')
-                                                        .append($('<button/>').addClass('button tiny dropdown').attr('href', '#').attr('data-dropdown', 'drop-' + index).text('Edit'))
-                                                        .append($('<ul/>').addClass('f-dropdown').attr('id', 'drop-' + index).attr('data-dropdown-content', '')
-                                                                .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
-                                                                .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Enable')))
-                                                                .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete')))))
+                                                        .append($('<div/>').addClass('dropdown')
+                                                                .append($('<button/>').addClass('btn btn-primary dropdown-toggle').attr('href', '#').attr('data-toggle', 'dropdown').text('Edit'))
+                                                                .append($('<ul/>').addClass('dropdown-menu')
+                                                                        .append($('<li/>').append($('<a/>').attr('onclick', "editCommand(\"" + command.name + "\")").text('Edit')))
+                                                                        .append($('<li/>').append($('<a/>').attr('onclick', "toggleCommand(\"" + command.name + "\")").text('Enable')))
+                                                                        .append($('<li/>').append($('<a/>').attr('onclick', "deleteCommand(\"" + command.name + "\")").text('Delete'))))))
                                 );
                             } else {
                                 table.append($('<tr/>').prop('title', 'This Command is DISABLED').attr('style', 'background-color: #F9D2D4; cursor: help;')
@@ -197,171 +224,238 @@
                     }
             )
             ;
-            $(document).foundation('dropdown', 'reflow');
         });
+    }
+
+
+    function onNewCommandInput(id) {
+        var elem = $(id);
+        if (elem.val().toString().contains(" ")) {
+            elem.parent().addClass('has-error');
+            elem.parent().find('div').remove().end();
+            elem.parent().append($('<div/>').text("You can't have a space in the command name!").addClass('text-danger'));
+        } else {
+            elem.parent().removeClass('has-error');
+            elem.parent().find('div').remove().end();
+        }
+    }
+    function onNewCommandResponseScriptInput(id, id2) {
+        var elem = $(id);
+        var elem2 = $(id2);
+        if(elem.val().toString() !== ""){
+            elem2.attr('disabled',"disabled");
+            elem2.removeProp('required');
+        }else{
+            elem2.removeAttr('disabled');
+            elem2.prop('required','required')
+        }
+        /*if (elem.val().toString()!== "" && elem2.val().toString()!== "") {
+            elem.parent().addClass('has-error');
+            elem.parent().find('div').remove().end();
+            elem.parent().append($('<div/>').text("You can't have a response and a script!").addClass('text-danger'));
+        } else {
+            elem.parent().removeClass('has-error');
+            elem.parent().find('div').remove().end();
+        }*/
     }
 </script>
 
-<div id='newModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
-    <form id="ajax-new">
-        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-        <input name="action_type" id="action_type" type="hidden" value="new">
+<div id='newModal' class="modal fade" role="dialog">
+    <div class="modal-dialog">
 
-        <div class="field">
-            <label for="command">Command:</label>
-            <input type='text' id='newCommand' name='command' required>
-        </div>
-        <div class="field">
-            <label for="response">Response:</label>
-            <input type='text' placeholder="example response" id='newResponse' name='response'>
-        </div>
-        <div class="field">
-            <label for="script">Script (optional; overrides 'Response'):</label>
-            <input type='text' id='newScript' name='script'>
-        </div>
-        <div class="field">
-            <label for="minArgs">Minimum Arguments:</label>
-            <input required type='number' id='mewMinArgs' min="0" value='0' name='minArgs'>
-        </div>
-        <div class="field">
-            <label>Debug</label>
-            <select name="debug" id="newDebug" title="debug">
-                <option value="false">False</option>
-                <option value="true">True</option>
-            </select>
-        </div>
-        <div class="field">
-            <label>Executing UserLevel:</label>
-            <select class="userLevels" id="newEUL" name="eUL"></select>
-        </div>
-        <div class="field">
-            <label>Name Modifying UserLevel:</label>
-            <select class="userLevels" id="newNMUL" name="nMUL">
-            </select>
-        </div>
-        <div class="field">
-            <label>Response Modifying UserLevel:</label>
-            <select class="userLevels" id="newRMUL" name="rMUL">
-            </select>
-        </div>
-        <div class="field">
-            <label>UserLevel Modifying UserLevel:</label>
-            <select class="userLevels" id="newULMUL" name="ulMUL">
-            </select>
-        </div>
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">&#215;</button>
+                <h4 class="modal-title">New</h4>
 
-        <div class="field">
-            <a class="button" onclick="addNewCommand()">Save</a>
-        </div>
-    </form>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-</div>
-<div id='editModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
-    <form id="ajax-edit">
-        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-        <input name="old_command" id="editOldCommand" type="hidden">
-        <input name="action_type" id="action_type" type="hidden" value="edit">
+            </div>
+            <div class="modal-body" id="newModalBody">
+                <form id="ajax-new">
+                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                    <input name="action_type" id="action_type" type="hidden" value="new">
 
-        <div class="field">
-            <label for="command">Command:</label>
-            <input type='text' id='editCommand' name='command' required>
-        </div>
-        <div class="field">
-            <label for="response">Response:</label>
-            <input type='text' placeholder="example response" id='editResponse' name='response'>
-        </div>
-        <div class="field">
-            <label for="script">Script (optional; overrides 'Response'):</label>
-            <input type='text' id='editScript' readonly name='script'>
-        </div>
-        <div class="field">
-            <label for="minArgs">Minimum Arguments:</label>
-            <input required type='number' id='editMinArgs' min="0" value='0' name='minArgs'>
-        </div>
-        <div class="field">
-            <label>Debug</label>
-            <select name="debug" id="editDebug" title="debug">
-                <option value="false">False</option>
-                <option value="true">True</option>
-            </select>
-        </div>
-        <div class="field">
-            <label>Executing UserLevel:</label>
-            <select class="userLevels" id="editEUL" name="eUL"></select>
-        </div>
-        <div class="field">
-            <label>Name Modifying UserLevel:</label>
-            <select class="userLevels" id="editNMUL" name="nMUL">
-            </select>
-        </div>
-        <div class="field">
-            <label>Response Modifying UserLevel:</label>
-            <select class="userLevels" id="editRMUL" name="rMUL">
-            </select>
-        </div>
-        <div class="field">
-            <label>UserLevel Modifying UserLevel:</label>
-            <select class="userLevels" id="editULMUL" name="ulMUL">
-            </select>
-        </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newCommand">Command:</label>
+                        <input class='form-control' type='text' id='newCommand' oninput='onNewCommandInput("#newCommand")' name='command' required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newResponse">Response:</label>
+                        <input class='form-control' type='text' placeholder="example response" oninput='onNewCommandResponseScriptInput("#newResponse","#newScript")' id='newResponse' name='response'>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newScript">Script (optional; overrides 'Response'):</label>
+                        <input class='form-control' type='text' oninput='onNewCommandResponseScriptInput("#newScript","#newResponse")' id='newScript' name='script'>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newMinArgs">Minimum Arguments:</label>
+                        <input class="form-control" required type='number' id='newMinArgs' min="0" value='0' name='minArgs'>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newDebug">Debug</label>
+                        <select class="form-control" name="debug" id="newDebug" title="debug">
+                            <option value="false">False</option>
+                            <option value="true">True</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newEUL">Executing UserLevel:</label>
+                        <select class="form-control userLevels" id="newEUL" name="eUL"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newNMUL">Name Modifying UserLevel:</label>
+                        <select class="form-control userLevels" id="newNMUL" name="nMUL">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newRMUL">Response Modifying UserLevel:</label>
+                        <select class="form-control userLevels" id="newRMUL" name="rMUL">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="newULMUL">UserLevel Modifying UserLevel:</label>
+                        <select class="form-control userLevels" id="newULMUL" name="ulMUL">
+                        </select>
+                    </div>
 
-        <div class="field">
-            <a class="button" onclick="doEditCommand()" id="editSubmit">Save</a>
-        </div>
-    </form>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-</div>
-<div id='deleteModal' class='reveal-modal' data-options='close_on_background_click: false;' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'>
-    <form id='ajax-delete'>
-        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-        <input name="action_type" id="action_type" type="hidden" value="delete">
-        <input type='hidden' id='deleteOldCommand' name='old_command'>
-        <label for="deleteCommand">Confirm that you want to
-            delete the
-            command: <span id="deleteCommand"></span></label>
-        <input required data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Delete" type="checkbox" id="deleteConfirm" name="confirm" value="confirm">
-        <br/>
-        <a class="button alert" onclick="doDeleteCommand()">Confirm Delete</a>
-    </form>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-</div>
-
-<h4 class="text-center">Commands</h4>
-<form>
-    <div class="row">
-        <div class="large-6 columns small-centered">
-            <div class="row collapse prefix-radius">
-                <div class="small-3 columns small-offset-3">
-                    <span class="prefix">User Level </span>
-                </div>
-                <div class="small-3 columns end">
-                    <label for="user_level"></label>
-                    <select id="user_level" onchange="on_userLevelChange()"></select>
-                </div>
+                    <div class="form-group">
+                        <a class="btn btn-primary" onclick="addNewCommand()">Save</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    <div id="andBelow" class="row hidden-for-small-up" style="margin-bottom: 20px;">
-        <div class="large-6 columns small-centered">
-            <div class="row collapse prefix-radius">
-                <div class="small-6 small-offset-3 end columns" style="text-align: center;">
-                    <input onchange="on_userLevelChange()" data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Exact" type="checkbox" name="below" id="below"/>
-                    <label for="below"></label>
-                </div>
+</div>
+<div id='editModal' class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">&#215;</button>
+                <h4 class="modal-title">Edit</h4>
+
+            </div>
+            <div class="modal-body">
+                <form id="ajax-edit">
+                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                    <input name="old_command" id="editOldCommand" type="hidden">
+                    <input name="action_type" id="action_type" type="hidden" value="edit">
+
+                    <div class="field">
+                        <label for="editCommand">Command:</label>
+                        <input class='form-control' type='text' id='editCommand' name='command' required>
+                    </div>
+                    <div class="field">
+                        <label for="editResponse">Response:</label>
+                        <input class='form-control' type='text' placeholder="example response" id='editResponse' name='response'>
+                    </div>
+                    <div class="field">
+                        <label for="editScript">Script (optional; overrides 'Response'):</label>
+                        <input class='form-control' type='text' id='editScript' readonly name='script'>
+                    </div>
+                    <div class="field">
+                        <label for="minArgs">Minimum Arguments:</label>
+                        <input required type='number' id='editMinArgs' min="0" value='0' name='minArgs'>
+                    </div>
+                    <div class="field">
+                        <label>Debug</label>
+                        <select name="debug" id="editDebug" title="debug">
+                            <option value="false">False</option>
+                            <option value="true">True</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Executing UserLevel:</label>
+                        <select class="userLevels" id="editEUL" name="eUL"></select>
+                    </div>
+                    <div class="field">
+                        <label>Name Modifying UserLevel:</label>
+                        <select class="userLevels" id="editNMUL" name="nMUL">
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Response Modifying UserLevel:</label>
+                        <select class="userLevels" id="editRMUL" name="rMUL">
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>UserLevel Modifying UserLevel:</label>
+                        <select class="userLevels" id="editULMUL" name="ulMUL">
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <a class="button" onclick="doEditCommand()" id="editSubmit">Save</a>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
+</div>
+<div id='deleteModal' class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">&#215;</button>
+                <h4 class="modal-title">Delete</h4>
+
+            </div>
+            <div class="modal-body">
+                <form id='ajax-delete'>
+                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                    <input name="action_type" id="action_type" type="hidden" value="delete">
+                    <input type='hidden' id='deleteOldCommand' name='old_command'>
+                    <label for="deleteCommand">Confirm that you want to
+                        delete the
+                        command: <span id="deleteCommand"></span></label>
+                    <input required data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Delete" type="checkbox" id="deleteConfirm" name="confirm" value="confirm">
+                    <br/>
+                    <a class="btn btn-danger" onclick="doDeleteCommand()">Confirm Delete</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<h4 class="text-center">Commands</h4>
+
+<form class="form-horizontal" role="form">
+
+    <div class=" form-group">
+        <label class="control-label col-sm-6" for="user_level">User Level</label>
+
+        <div class="col-sm-2">
+            <select class="form-control" id="user_level" onchange="on_userLevelChange()"></select>
+        </div>
+    </div>
+
+    <div id="andBelow" class="row" style="margin-bottom: 20px;">
+        <div class="form-group">
+            <label class="control-label col-sm-6" for="below"></label>
+
+            <div class="col-sm-2">
+                <input onchange="on_userLevelChange()" data-label-width="auto" data-handle-width="auto" data-on-text="Yes" data-off-text="No" data-label-text="Exact" type="checkbox" name="below" id="below"/>
+
+            </div>
+        </div>
+    </div>
     </div>
 </form>
 
-<table>
-    <thead>
-    <tr id="tableHeadCommands">
-        <th style="min-width: 200px">Name</th>
-        <th style="width: 100%;">Response/Script</th>
-        <th style="min-width: 200px">User Level</th>
-    </tr>
-    </thead>
-    <tbody id="tableBodyCommands">
-    </tbody>
-</table>
-
+<div class="row">
+    <div class="col-xs-10 col-xs-offset-1">
+        <table class="table-hover table-condensed table-responsive table-bordered">
+            <thead>
+            <tr id="tableHeadCommands">
+                <th style="min-width: 200px">Name</th>
+                <th style="width: 100%;">Response/Script</th>
+                <th style="min-width: 200px">User Level</th>
+            </tr>
+            </thead>
+            <tbody id="tableBodyCommands">
+            </tbody>
+        </table>
+    </div>
+</div>

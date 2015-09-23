@@ -12,18 +12,25 @@
 //
 //= require jquery
 //= require jquery_ujs
-//= require foundation
 //= require turbolinks
 //= require_tree .
-//= require responsive-tables
+//= require bootstrap-sprockets
+//= require bootstrap-switch
 
 $(function () {
-    $(document).foundation();
 });
 
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
 };
+
+String.prototype.containsIgnoreCase = function(str1){
+    return ~this.toLowerCase().indexOf(str1.toLowerCase())
+}
+
+String.prototype.contains = function(str1){
+    return ~this.indexOf(str1)
+}
 
 String.prototype.escapeHtml = function(){
     var map = {
@@ -37,32 +44,4 @@ String.prototype.escapeHtml = function(){
     return this.replace(/[&<>"']/g, function(m) { return map[m]; });
 };
 
-function load(url) {
-
-    $('#loadingModal').foundation('reveal', 'open');
-
-    $.ajax({
-        type: 'GET',
-        url: url,
-        success: createSuccessHandler(url),
-        error: createErrorHandler,
-        complete: hideLoadingImage
-    });
-
-}
-
-function createSuccessHandler(url) {
-    window.location.href = url
-
-}
-
-function createErrorHandler(data) {
-
-    // alert("It failed, ffs!")
-
-}
-
-function hideLoadingImage() {
-    $('#loadingModal').foundation('reveal', 'close');
-}
 

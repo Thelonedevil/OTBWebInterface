@@ -8,7 +8,7 @@
             table.find('tr').remove().end();
             $.each(data, function (index, alias) {
                 $.getJSON(window.location.href + '/get_command', {command: alias.command}, function (command) {
-                    if(command === null){
+                    if (command === null) {
                         console.log(alias.name);
                         return;
                     }
@@ -62,81 +62,191 @@
                 });
 
             });
-
+            $(document).foundation('dropdown', 'reflow');
         });
+    }
+
+    function reset() {
+        $('#newAlias').val("");
+        $('#newCommand').val("");
+        $('#newMUL').val("DEFAULT");
+
+        $('#editOldAlias').val("");
+        $('#editAlias').val("");
+        $('#editCommand').val("");
+        $('#editMUL').val("DEFAULT");
+
+        $('#deleteConfirm').removeProp('checked');
+        getAliases();
     }
 
     function newAlias() {
         $('#newModal').foundation('reveal', 'open');
     }
-    function addNewAlias(){
+    function addNewAlias() {
 
+        var formData = $('#ajax-new').serialize();
+        var alias = $('#newAlias');
+
+        $.post(window.location.href + '/add_command', formData, function (result) {
+            if (result == '1') {
+                reset();
+                $('#newModal').foundation('reveal', 'close');
+            } else if (result == '0') {
+                $('#newModal').append($('<div/>').attr('data-alert', '').attr('role', 'alertdialog').addClass('alert-box alert').text('This Alias ' + alias.val() + ' already exists for this channel!')/*.append($('<button/>').addClass('close').html('&times;'))*/);
+            }
+        });
+
+    }
+
+    function editAlias(alias) {
+        $('#editOldAlias').val(alias);
+        $('#editAlias').val(alias);
+        $.getJSON(location.href + '/get_alias', {alias: alias}, function (result) {
+            $('#editCommand').val(result.command);
+            $('#editMUL').val(result.modifyingUL);
+        });
+        $('#editModal').foundation('reveal', 'open');
+
+    }
+
+    function doEditAlias() {
+        $.post(window.location.href + '/edit_alias', $('#ajax-edit').serialize(), function () {
+            reset();
+            $('#editModal').foundation('reveal', 'close');
+        });
+
+    }
+
+    function toggleCommand(alias) {
+        $.post(window.location.href + "/toggle_alias", {
+            old_alias: alias,
+            action_type: 'toggle'
+        }, function (result) {
+            if (result == '1') {
+                reset();
+            } else if (result == '0') {
+            }
+        });
+
+    }
+
+    function deleteAlias(alias) {
+        $('#deleteOldAlias').val(alias);
+        $('#deleteAlias').text(alias);
+        $('#deleteModal').foundation('reveal', 'open');
+
+    }
+    function doDeleteAlias() {
+        if ($('#deleteConfirm').is(':checked')) {
+            $.post(window.location.href + '/delete_alias', $('#ajax-delete').serialize(), function () {
+                reset();
+                $('#deleteModal').foundation('reveal', 'close');
+            });
+        }
+    }
+
+    function populateUserLevels() {
+        $.getJSON('/dashboard/get_user_levels', function (data) {
+            $.each(data.reverse(), function (index, userLevel) {
+                $('.userLevels').append($("<option/>").val(userLevel).text(userLevel.capitalize()));
+            });
+        });
     }
 
     $(document).ready(function () {
         $.getJSON('/dashboard/is_whitelisted', function (data) {
             if (data == '1') {
-                $('#tableHeadCommands').append($('<th/>').append($('<a/>').addClass('button tiny').attr('onclick', 'newCommand()').text('New')));
+                $('#tableHeadAliases').append($('<th/>').append($('<a/>').addClass('button tiny').attr('onclick', 'newAlias()').text('New')));
                 writable = true;
             }
         });
         getChannelName();
         getAliases();
+        populateUserLevels();
     });
 </script>
 
-<div id='newModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
-    <form id="ajax-new">
-        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-        <input name="action_type" id="action_type" type="hidden" value="new">
+<div id='newModal' class="modal fade" role="dialog">
+    <div class="modal-dialog">
 
-        <div class="field">
-            <label for="alias">Alias:</label>
-            <input type='text' id='newAlias' name='alias' required>
-        </div>
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">&#215;</button>
+                <h4 class="modal-title">New</h4>
 
-        <div class="field">
-            <label for="command">Command:</label>
-            <input type='text' id='newCommand' name='command' required>
-        </div>
-        <div class="field">
-            <label>Modifying UserLevel:</label>
-            <select class="userLevels" id="newMUL" name="mUL">
-            </select>
-        </div>
+            </div>
+            <div class="modal-body">
+                <form id="ajax-new" data-abide>
+                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                    <input name="action_type" id="action_type" type="hidden" value="new">
 
-        <div class="field">
-            <a class="button" onclick="addNewAlias()">Save</a>
+                    <div class="field">
+                        <label for="newAlias">Alias:</label>
+                        <input type='text' id='newAlias' name='alias' required>
+                        <small class="error">You need to enter an alias name!.</small>
+                    </div>
+
+                    <div class="field">
+                        <label for="newCommand">Command:</label>
+                        <input type='text' id='newCommand' name='command' required>
+                        <small class="error">You need to enter a command!</small>
+                    </div>
+                    <div class="field">
+                        <label>Modifying UserLevel:</label>
+                        <select class="userLevels" id="newMUL" name="mUL">
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <a class="button" onclick="addNewAlias()">Save</a>
+                    </div>
+                </form>
+            </div>
         </div>
-    </form>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
 </div>
-<div id='editModal' class='reveal-modal' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role="dialog" data-options="close_on_background_click: false;">
-    <form id="ajax-edit">
-        <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
-        <input name="old_alias" id="editOldAlias" type="hidden">
-        <input name="action_type" id="action_type" type="hidden" value="edit">
+<div id='editModal' class="modal fade" role="dialog">
+    <div class="modal-dialog">
 
-        <div class="field">
-            <label for="alias">Alias:</label>
-            <input type='text' id='editAlias' name='alias' required>
-        </div>
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">&#215;</button>
+                <h4 class="modal-title">Edit</h4>
 
-        <div class="field">
-            <label for="command">Command:</label>
-            <input type='text' id='editCommand' name='command' required>
-        </div>
-        <div class="field">
-            <label>Modifying UserLevel:</label>
-            <select class="userLevels" id="editMUL" name="mUL">
-            </select>
-        </div>
+            </div>
+            <div class="modal-body">
 
-        <div class="field">
-            <a class="button" onclick="doEditAlias()" id="editSubmit">Save</a>
+                <form id="ajax-edit">
+                    <input name="authenticity_token" type="hidden" value="x37DrAAwyIIb7s+w2+AdoCR8cAJIpQhIetKRrPgG5VA=">
+                    <input name="old_alias" id="editOldAlias" type="hidden">
+                    <input name="action_type" id="action_type" type="hidden" value="edit">
+
+                    <div class="form-group">
+                        <label class="control-label" for="alias">Alias:</label>
+                        <input type='text' id='editAlias' name='alias' required>
+                    </div>
+
+                    <div class="field">
+                        <label for="command">Command:</label>
+                        <input type='text' id='editCommand' name='command' required>
+                    </div>
+                    <div class="field">
+                        <label>Modifying UserLevel:</label>
+                        <select class="userLevels" id="editMUL" name="mUL">
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <a class="button" onclick="doEditAlias()" id="editSubmit">Save</a>
+                    </div>
+                </form>
+            </div>
         </div>
-    </form>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+    K
 </div>
 <div id='deleteModal' class='reveal-modal' data-options='close_on_background_click: false;' data-reveal aria-labelledby='modalTitle' aria-hidden='true' role='dialog'>
     <form id='ajax-delete'>
@@ -155,7 +265,7 @@
 
 <h4 class="text-center">Aliases</h4>
 <table>
-    <thead>
+    <thead id="tableHeadAliases">
     <tr>
         <th style="min-width: 200px">Name</th>
         <th style="min-width: 200px">Command</th>

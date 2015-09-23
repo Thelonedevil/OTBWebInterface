@@ -73,6 +73,49 @@ class DashboardController < ApplicationController
     render :json => changed ? 1.to_json : 0.to_json
   end
 
+  def aliases_edit
+    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "#{::DIR_BASE}/data/channels/#{params[:channel]}/main.db"
+    if params.has_key? :old_alias
+      aliasObj = Alias.find_by_name params[:old_alias].to_s
+    else
+      aliasObj = Alias.new
+    end
+    changed=false
+    case params[:action_type]
+      when 'delete'
+        if Alias.exists? aliasObj.name.to_s
+          aliasObj.destroy
+          changed=true
+        end
+      when 'edit'
+        unless Alias.exists? params[:alias].to_s
+          aliasObj.name = params[:alias].to_s
+        end
+        aliasObj.command = params[:command].to_s
+        aliasObj.modifyingUL= params[:mUL].to_s
+        aliasObj.save
+        changed=true
+      when 'new'
+        unless Alias.exists? params[:alias]
+          aliasObj.name = params[:alias].to_s
+          aliasObj.command = params[:command].to_s
+          aliasObj.modifyingUL= params[:mUL].to_s
+          aliasObj.enabled='true'
+          aliasObj.save
+          changed=true
+        end
+
+      when 'toggle'
+        if Alias.exists? aliasObj.name
+          aliasObj.enabled = aliasObj.enabled=='true' ? 'false' : 'true'
+          aliasObj.save
+          changed=true
+        end
+      else
+        changed=false
+    end
+    render :json => changed ? 1.to_json : 0.to_json
+  end
 
   def get_quotes
     ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: "#{::DIR_BASE}/data/channels/#{params[:channel]}/quotes.db"
@@ -94,6 +137,10 @@ class DashboardController < ApplicationController
 
   def get_command
     render :json => Command.find_by_name(params[:command].to_s.split[0]).as_json
+  end
+
+  def get_alias
+    render :json => Alias.find_by_name(params[:alias].to_s).as_json
   end
 
   def get_commands

@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   get 'dashboard/:channel/aliases/get_channel_name' => 'dashboard#get_channel_name'
   get 'dashboard/:channel/aliases/get_aliases' => 'dashboard#get_aliases'
   get 'dashboard/:channel/aliases/get_command' => 'dashboard#get_command'
+  get 'dashboard/:channel/aliases/get_alias' => 'dashboard#get_alias'
 
   get 'dashboard/:channel/quotes' => 'dashboard#quotes'
   get 'dashboard/:channel/quotes/get_channel_name' => 'dashboard#get_channel_name'
@@ -24,6 +25,11 @@ Rails.application.routes.draw do
   post 'dashboard/:channel/commands/edit_command' => 'dashboard#commands_edit'
   post 'dashboard/:channel/commands/delete_command' => 'dashboard#commands_edit'
   post 'dashboard/:channel/commands/toggle_command' => 'dashboard#commands_edit'
+
+  post 'dashboard/:channel/aliases/add_alias' => 'dashboard#aliases_edit'
+  post 'dashboard/:channel/aliases/edit_alias' => 'dashboard#aliases_edit'
+  post 'dashboard/:channel/aliases/delete_alias' => 'dashboard#aliases_edit'
+  post 'dashboard/:channel/aliases/toggle_alias' => 'dashboard#aliases_edit'
 
   get 'welcome/index'
 
